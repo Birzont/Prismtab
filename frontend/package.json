@@ -1,0 +1,31 @@
+{
+  "name": "frontend",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "description": "Prismtab Next 앱. 앱 단일 원본은 리포 루트 index.html — sync-embed 로 prismtab.css·embed.html 생성",
+  "scripts": {
+    "sync-embed": "node scripts/prepare-embed.mjs",
+    "predev": "npm run sync-embed",
+    "prebuild": "npm run sync-embed",
+    "dev": "next dev --webpack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "next": "16.2.4",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.4",
+    "typescript": "^5"
+  }
+}

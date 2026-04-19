@@ -1,0 +1,11 @@
+.DS_Store
+.env
+.env.local
+.env.*.local
+
+node_modules/
+frontend/node_modules/
+frontend/.next/
+.pnpm-store/
+*.log
+.pnpm-debug.log*
