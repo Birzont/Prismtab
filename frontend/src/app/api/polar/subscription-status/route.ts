@@ -3,7 +3,7 @@ import { getUserIdFromBearer } from "@/lib/auth-bearer";
 import { readUserRow, syncUserPlanFromPolar } from "@/lib/polar-users-sync";
 import { getServiceSupabase } from "@/lib/supabase-admin";
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 export async function GET(req: Request) {
   try {

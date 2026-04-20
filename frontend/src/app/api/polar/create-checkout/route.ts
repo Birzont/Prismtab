@@ -3,7 +3,7 @@ import { getUserIdFromBearer } from "@/lib/auth-bearer";
 import { getPolarProductIds, polarRequest } from "@/lib/polar-config";
 import { getServiceSupabase } from "@/lib/supabase-admin";
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 type PlanKey = "pro" | "team";
 

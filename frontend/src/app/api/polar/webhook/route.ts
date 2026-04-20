@@ -8,7 +8,7 @@ import {
   normalizeCheckout,
 } from "@/lib/polar-users-sync";
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 function parseUnverifiedEvent(raw: string): { type: string; data: unknown } {
   const parsed = JSON.parse(raw) as { type?: string; data?: unknown };

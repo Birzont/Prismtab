@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getUserIdFromBearer } from "@/lib/auth-bearer";
 import { applyCheckoutToUser, fetchPolarCheckout } from "@/lib/polar-users-sync";
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 export async function GET(req: Request) {
   try {
