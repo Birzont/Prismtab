@@ -2517,13 +2517,26 @@
         notify('Polar 고객 포털 링크가 없습니다. meta polar-portal-url 또는 window.PRISM_TAB_POLAR.customerPortalUrl 을 설정해 주세요.');
         return;
       }
+      let targetUrl = url;
+      try {
+        const parsed = new URL(url);
+        const email = typeof currentUser?.email === 'string' ? currentUser.email.trim() : '';
+        if (email) {
+          // Polar 환경별 프리필 키 차이를 고려해 둘 다 전달
+          if (!parsed.searchParams.has('email')) parsed.searchParams.set('email', email);
+          if (!parsed.searchParams.has('customer_email')) parsed.searchParams.set('customer_email', email);
+        }
+        targetUrl = parsed.toString();
+      } catch (e) {
+        targetUrl = url;
+      }
       const popup = window.open(
-        url,
+        targetUrl,
         'polarPortalWindow',
         'popup=yes,width=1080,height=840,noopener,noreferrer',
       );
       if (!popup) {
-        notify('팝업이 차단되었습니다. 브라우저에서 팝업 허용 후 다시 시도해 주세요.');
+        //notify('팝업이 차단되었습니다. 브라우저에서 팝업 허용 후 다시 시도해 주세요.');
       }
     }
 
