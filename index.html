@@ -1064,6 +1064,77 @@
       background: #e8f3ff;
       border-color: #d1d6db;
     }
+    .dock-mode-toggle-wrap {
+      display: none;
+      width: 100%;
+      box-sizing: border-box;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin: 10px 0 6px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: #f8f9fa;
+      border: 1px solid #e5e8eb;
+    }
+    .dock-mode-label {
+      font-size: 11px;
+      line-height: 1.3;
+      color: #6b7684;
+      flex: 1;
+      min-width: 0;
+    }
+    .dock-mode-label--members { text-align: left; }
+    .dock-mode-label--spaces { text-align: right; }
+    .dock-mode-paren { font-weight: 600; color: #8b95a1; }
+    .dock-mode-switch {
+      position: relative;
+      display: inline-flex;
+      width: 44px;
+      height: 26px;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .dock-mode-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+    .dock-mode-slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background: #c5cdd5;
+      border-radius: 999px;
+      transition: background 0.2s ease;
+    }
+    .dock-mode-slider::before {
+      content: '';
+      position: absolute;
+      height: 20px;
+      width: 20px;
+      left: 3px;
+      bottom: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    }
+    .dock-mode-switch input:checked + .dock-mode-slider {
+      background: #2563eb;
+    }
+    .dock-mode-switch input:checked + .dock-mode-slider::before {
+      transform: translateX(18px);
+    }
+    .dock-mode-toggle-wrap .dock-mode-label.is-dimmed {
+      opacity: 0.5;
+    }
+    .dock-mode-toggle-wrap .dock-mode-label.is-active {
+      color: #273142;
+      font-weight: 700;
+      opacity: 1;
+    }
     .profile-card {
       display: none;
       gap: 10px;
@@ -1226,7 +1297,20 @@
     #oauthAuthRow #emailPasswordLoginBtn {
       flex: 1 1 0;
       align-self: stretch;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      border: 1px solid #e5e8eb;
+      border-radius: 10px;
+      background: #ffffff;
+      color: #191f28;
+      padding: 10px 14px;
       font-weight: 700;
+    }
+    #oauthAuthRow #emailPasswordLoginBtn:hover {
+      background: #f8f9fa;
+      border-color: #d7dce2;
     }
     #oauthAuthRow .btn-google-auth {
       flex: 1 1 0;
@@ -1623,6 +1707,188 @@
       background: #e5e5e5;
     }
 
+    /* Polar 요금제 패널 (설정 모달 폭의 약 3배) */
+    .pricing-panel-overlay {
+      z-index: 100050;
+      padding: 16px;
+    }
+    .pricing-panel-overlay .modal.pricing-modal-panel {
+      width: min(1180px, calc(100vw - 32px));
+      max-width: 1180px;
+      min-height: min(78vh, 720px);
+      max-height: min(96vh, 1040px);
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 28px 32px 36px;
+      border-radius: 20px;
+      border: 1px solid #c5cdd6;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+      background: #fff;
+      color: #191f28;
+    }
+    .pricing-modal-head {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .pricing-modal-head h2 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 700;
+      color: #191f28;
+    }
+    .pricing-polar-note {
+      margin: 0 0 20px;
+      font-size: 13px;
+      color: #6b7684;
+      line-height: 1.45;
+    }
+    .pricing-cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 20px;
+      align-items: stretch;
+    }
+    @media (max-width: 1100px) {
+      .pricing-cards {
+        grid-template-columns: 1fr;
+      }
+    }
+    .pricing-card {
+      border: 2px solid #c3cad4;
+      border-radius: 20px;
+      padding: 24px 22px 24px;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      min-height: min(52vh, 420px);
+    }
+    .pricing-tier-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: #191f28;
+      margin-bottom: 4px;
+    }
+    .pricing-price-line {
+      font-size: 28px;
+      font-weight: 800;
+      color: #191f28;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin-bottom: 8px;
+    }
+    .pricing-price-line .pricing-per {
+      font-size: 14px;
+      font-weight: 500;
+      color: #8b95a1;
+      margin-left: 4px;
+    }
+    .pricing-desc {
+      font-size: 13px;
+      line-height: 1.5;
+      color: #6b7684;
+      margin-bottom: 18px;
+      flex: 0 0 auto;
+    }
+    .pricing-card-cta {
+      width: 100%;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease, opacity 0.2s ease, transform 0.15s ease;
+      margin-bottom: 10px;
+      background: #191f28;
+      color: #fff;
+    }
+    .pricing-card-cta:hover:not(:disabled) {
+      opacity: 0.92;
+    }
+    .pricing-card-cta:disabled {
+      cursor: default;
+      opacity: 1;
+    }
+    .pricing-card-cta--current {
+      background: #b0b8c1;
+      color: #fff;
+    }
+    .pricing-card-cta--included {
+      background: #eef1f4;
+      color: #6b7684;
+      border: 1px solid #e5e8eb;
+    }
+    .pricing-manage-link {
+      display: none;
+      font-size: 13px;
+      font-weight: 600;
+      color: #191f28;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      margin-bottom: 16px;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      text-align: left;
+    }
+    .pricing-manage-link:hover {
+      color: #4e5968;
+    }
+    .pricing-feat-head {
+      font-size: 12px;
+      font-weight: 700;
+      color: #6b7684;
+      margin: 4px 0 10px;
+    }
+    .pricing-feat-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      flex: 1 1 auto;
+    }
+    .pricing-feat-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13px;
+      line-height: 1.45;
+      color: #333b45;
+      margin-bottom: 10px;
+    }
+    .pricing-feat-list li:last-child {
+      margin-bottom: 0;
+    }
+    .pricing-check {
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+      margin-top: 1px;
+      color: #2563eb;
+    }
+    .btn-account-upgrade {
+      display: none;
+      width: 100%;
+      box-sizing: border-box;
+      margin: 0 0 10px;
+      padding: 11px 14px;
+      border-radius: 12px;
+      border: 1px solid #191f28;
+      background: #fff;
+      color: #191f28;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    .btn-account-upgrade:hover {
+      background: #191f28;
+      color: #fff;
+    }
+
     @media (max-width: 600px) {
       body {
         padding-bottom: 104px;
@@ -1786,6 +2052,23 @@
               <div class="profile-email" id="profileEmailText"></div>
             </div>
           </div>
+          <button type="button" class="btn-account-upgrade" id="accountUpgradeBtn">계정 업그레이드</button>
+          <div class="dock-mode-toggle-wrap" id="dockModeToggleWrap" style="display:none;" aria-label="Dock 표시 모드">
+            <span class="dock-mode-label dock-mode-label--members" id="dockModeLabelMembers">Dock에 팀 멤버 표시 <span class="dock-mode-paren">(off)</span></span>
+            <label class="dock-mode-switch">
+              <input type="checkbox" id="dockShowSpacesToggle" aria-label="Dock에 스페이스 표시">
+              <span class="dock-mode-slider"></span>
+            </label>
+            <span class="dock-mode-label dock-mode-label--spaces" id="dockModeLabelSpaces">Dock에 스페이스 표시 <span class="dock-mode-paren">(on)</span></span>
+          </div>
+          <div class="dock-mode-toggle-wrap" id="dockAddToggleWrap" style="display:none;" aria-label="Dock 추가 버튼 표시">
+            <span class="dock-mode-label dock-mode-label--members" id="dockAddLabelHide">Dock에 추가 숨기기 <span class="dock-mode-paren">(off)</span></span>
+            <label class="dock-mode-switch">
+              <input type="checkbox" id="dockShowAddToggle" aria-label="Dock에 추가 표시">
+              <span class="dock-mode-slider"></span>
+            </label>
+            <span class="dock-mode-label dock-mode-label--spaces" id="dockAddLabelShow">Dock에 추가 표시 <span class="dock-mode-paren">(on)</span></span>
+          </div>
           <div class="form-group" id="emailAuthGroup">
             <label for="loginEmailInput">이메일</label>
             <div class="inline-row">
@@ -1917,6 +2200,64 @@
       <div class="modal-actions sm-stack sm-order-actions">
         <button type="button" class="btn-cancel" id="settingsCancelBtn">취소</button>
         <button type="button" class="btn-save" id="settingsApplyBtn">적용</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay pricing-panel-overlay" id="pricingPanelOverlay" role="presentation">
+    <div class="modal pricing-modal-panel" role="dialog" aria-modal="true" aria-labelledby="pricingPanelTitle">
+      <div class="pricing-modal-head">
+        <button type="button" class="settings-modal-back" id="pricingPanelBackBtn">
+          <span class="settings-back-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          </span>
+          <span>뒤로</span>
+        </button>
+        <h2 id="pricingPanelTitle">요금제</h2>
+      </div>
+      <p class="pricing-polar-note">결제는 Polar 체크아웃으로 진행되며, 플랜은 서버가 Polar와 동기화합니다. API가 다른 오리진이면 <code>window.PRISM_TAB_API_BASE</code>를 설정하세요. 고객 포털은 <code>&lt;meta name="polar-portal-url" content="…"&gt;</code> 또는 <code>window.PRISM_TAB_POLAR.customerPortalUrl</code>로 넣을 수 있습니다.</p>
+      <div class="pricing-cards">
+        <div class="pricing-card" data-plan="free">
+          <div class="pricing-tier-label">Free</div>
+          <div class="pricing-price-line">무료</div>
+          <p class="pricing-desc">핵심 기능으로 Prismtab을 무료로 시작해 보세요.</p>
+          <button type="button" class="pricing-card-cta" id="pricingBtnFree">현재 플랜</button>
+          <button type="button" class="pricing-manage-link" id="pricingManageFree">구독 관리</button>
+          <ul class="pricing-feat-list">
+            <li><span class="pricing-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg></span>바로가기 그리드 및 페이지 전환</li>
+            <li><span class="pricing-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg></span>개인 스코프 · 기본 테마</li>
+            <li><span class="pricing-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg></span>조직 1개까지 무료로 참여</li>
+            <li><span class="pricing-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg></span>Dock · 작업 영역 기본 사용</li>
+          </ul>
+        </div>
+        <div class="pricing-card" data-plan="pro">
+          <div class="pricing-tier-label">Pro</div>
+          <div class="pricing-price-line">$9<span class="pricing-per">/월</span></div>
+          <p class="pricing-desc">개인 사용자에게 필요한 고급 기능을 제공합니다.</p>
+          <button type="button" class="pricing-card-cta" id="pricingBtnPro">업그레이드</button>
+          <button type="button" class="pricing-manage-link" id="pricingManagePro">구독 관리</button>
+          <div class="pricing-feat-head">Free의 모든 기능 및…</div>
+          <ul class="pricing-feat-list">
+            <li><span class="pricing-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg></span>조직·스페이스 설정 확장</li>
+            <li><span class="pricing-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg></span>초대·멤버·별명 워크플로 강화</li>
+            <li><span class="pricing-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg></span>비공개 페이지·일괄 설정 코드</li>
+            <li><span class="pricing-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg></span>우선 지원 (Polar 영수증 기준)</li>
+          </ul>
+        </div>
+        <div class="pricing-card" data-plan="team">
+          <div class="pricing-tier-label">Team</div>
+          <div class="pricing-price-line">$29<span class="pricing-per">/월</span></div>
+          <p class="pricing-desc">팀 협업과 여러 스페이스 운영에 맞춘 기능을 제공합니다.</p>
+          <button type="button" class="pricing-card-cta" id="pricingBtnTeam">팀으로 시작</button>
+          <button type="button" class="pricing-manage-link" id="pricingManageTeam">구독 관리</button>
+          <div class="pricing-feat-head">Pro의 모든 기능 및…</div>
+          <ul class="pricing-feat-list">
+            <li><span class="pricing-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg></span>다중 조직·워크스페이스 우선순위</li>
+            <li><span class="pricing-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg></span>팀 단위 Dock / 스페이스 표시 옵션</li>
+            <li><span class="pricing-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg></span>조직별 테마·로고 운영 정리</li>
+            <li><span class="pricing-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg></span>신규 기능 우선 제공 (로드맵)</li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
@@ -2063,8 +2404,243 @@
       return canEditLogo();
     }
 
+    const DOCK_SHOW_SPACES_KEY = 'prismtab_dock_show_spaces';
+    /** Polar 연동: checkout·고객 포털 URL (배포 시 주입). 미설정 시 안내 알림만 표시 */
+    window.PRISM_TAB_POLAR = Object.assign(
+      { checkoutProUrl: '', checkoutTeamUrl: '', customerPortalUrl: '' },
+      typeof window.PRISM_TAB_POLAR === 'object' && window.PRISM_TAB_POLAR ? window.PRISM_TAB_POLAR : {}
+    );
+    (function mergePolarPortalFromMeta() {
+      try {
+        const m = document.querySelector('meta[name="polar-portal-url"]');
+        const v = m && m.getAttribute('content');
+        if (v && String(v).trim()) window.PRISM_TAB_POLAR.customerPortalUrl = String(v).trim();
+      } catch (e) { /* ignore */ }
+    })();
+    const SUBSCRIPTION_PLAN_KEY = 'prismtab_subscription_plan';
+    const DOCK_SHOW_ADD_BTN_KEY = 'prismtab_dock_show_add_btn';
+
+    function isDockSpacesMode() {
+      try {
+        return localStorage.getItem(DOCK_SHOW_SPACES_KEY) === '1';
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function setDockSpacesMode(enabled) {
+      try {
+        localStorage.setItem(DOCK_SHOW_SPACES_KEY, enabled ? '1' : '0');
+      } catch (e) { /* ignore */ }
+    }
+
+    function isDockAddButtonVisible() {
+      try {
+        const v = localStorage.getItem(DOCK_SHOW_ADD_BTN_KEY);
+        if (v === null) return true;
+        return v === '1';
+      } catch (e) {
+        return true;
+      }
+    }
+
+    function setDockAddButtonVisible(enabled) {
+      try {
+        localStorage.setItem(DOCK_SHOW_ADD_BTN_KEY, enabled ? '1' : '0');
+      } catch (e) { /* ignore */ }
+    }
+
+    function updateDockModeToggleUi() {
+      const wrap = document.getElementById('dockModeToggleWrap');
+      const toggle = document.getElementById('dockShowSpacesToggle');
+      const lm = document.getElementById('dockModeLabelMembers');
+      const ls = document.getElementById('dockModeLabelSpaces');
+      if (!wrap || !toggle || !lm || !ls) return;
+      const on = isDockSpacesMode();
+      toggle.checked = on;
+      lm.classList.toggle('is-dimmed', on);
+      ls.classList.toggle('is-dimmed', !on);
+      lm.classList.toggle('is-active', !on);
+      ls.classList.toggle('is-active', on);
+    }
+
+    function updateDockAddToggleUi() {
+      const wrap = document.getElementById('dockAddToggleWrap');
+      const toggle = document.getElementById('dockShowAddToggle');
+      const lh = document.getElementById('dockAddLabelHide');
+      const ls = document.getElementById('dockAddLabelShow');
+      if (!wrap || !toggle || !lh || !ls) return;
+      const on = isDockAddButtonVisible();
+      toggle.checked = on;
+      lh.classList.toggle('is-dimmed', on);
+      ls.classList.toggle('is-dimmed', !on);
+      lh.classList.toggle('is-active', !on);
+      ls.classList.toggle('is-active', on);
+    }
+
+    function getPrismTabApiBase() {
+      try {
+        if (window.PRISM_TAB_API_BASE) return String(window.PRISM_TAB_API_BASE).replace(/\/$/, '');
+      } catch (e) { /* ignore */ }
+      try {
+        return String(window.location.origin || '').replace(/\/$/, '');
+      } catch (e2) {
+        return '';
+      }
+    }
+
+    function getPolarUrls() {
+      const w = window.PRISM_TAB_POLAR || {};
+      return {
+        checkoutProUrl: String(w.checkoutProUrl || '').trim(),
+        checkoutTeamUrl: String(w.checkoutTeamUrl || '').trim(),
+        customerPortalUrl: String(w.customerPortalUrl || '').trim()
+      };
+    }
+
+    function getSubscriptionPlan() {
+      try {
+        const p = (localStorage.getItem(SUBSCRIPTION_PLAN_KEY) || 'free').toLowerCase();
+        if (p === 'pro' || p === 'team') return p;
+        return 'free';
+      } catch (e) {
+        return 'free';
+      }
+    }
+
+    function openPolarUrl(url) {
+      if (!url) {
+        notify('Polar 고객 포털 링크가 없습니다. meta polar-portal-url 또는 window.PRISM_TAB_POLAR.customerPortalUrl 을 설정해 주세요.');
+        return;
+      }
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+
+    async function syncSubscriptionPlanWithPolarServer() {
+      if (!supabaseClient || !currentUser?.id) return;
+      const { data } = await supabaseClient.auth.getSession();
+      const token = data?.session?.access_token;
+      if (!token) return;
+      const base = getPrismTabApiBase();
+      if (!base) return;
+      const url = `${base}/api/polar/subscription-status?user_id=${encodeURIComponent(currentUser.id)}`;
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) return;
+      const j = await res.json().catch(() => ({}));
+      if (j.currentPlan === 'free' || j.currentPlan === 'pro' || j.currentPlan === 'team') {
+        try {
+          localStorage.setItem(SUBSCRIPTION_PLAN_KEY, j.currentPlan);
+        } catch (e) { /* ignore */ }
+      }
+    }
+
+    async function startPolarCheckout(plan) {
+      if (!supabaseClient || !currentUser?.id) {
+        notify('로그인이 필요합니다.');
+        return;
+      }
+      const { data } = await supabaseClient.auth.getSession();
+      const token = data?.session?.access_token;
+      if (!token) {
+        notify('세션이 없습니다. 다시 로그인해 주세요.');
+        return;
+      }
+      const base = getPrismTabApiBase();
+      if (!base) {
+        notify('API 베이스 URL을 확인할 수 없습니다.');
+        return;
+      }
+      const res = await fetch(`${base}/api/polar/create-checkout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ plan }),
+      });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        notify((j && j.error) ? String(j.error) : '체크아웃 생성에 실패했습니다.');
+        return;
+      }
+      if (j.url) {
+        window.location.href = j.url;
+      } else {
+        notify('체크아웃 URL을 받지 못했습니다.');
+      }
+    }
+
+    async function maybeVerifyPolarCheckoutFromUrl() {
+      try {
+        const u = new URL(window.location.href);
+        const cid = u.searchParams.get('checkout_id');
+        if (!cid || !supabaseClient || !currentUser?.id) return;
+        const { data } = await supabaseClient.auth.getSession();
+        const token = data?.session?.access_token;
+        if (!token) return;
+        const base = getPrismTabApiBase();
+        if (!base) return;
+        const res = await fetch(
+          `${base}/api/polar/verify-checkout?checkout_id=${encodeURIComponent(cid)}`,
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+        if (!res.ok) return;
+        u.searchParams.delete('checkout_id');
+        window.history.replaceState({}, '', u.pathname + (u.search ? u.search : '') + u.hash);
+        await syncSubscriptionPlanWithPolarServer();
+        updatePricingPanelUi();
+      } catch (e) {
+        console.warn('[polar/verify-checkout-url]', e);
+      }
+    }
+
+    function updatePricingPanelUi() {
+      const plan = getSubscriptionPlan();
+      const order = { free: 0, pro: 1, team: 2 };
+      const currentIdx = order[plan] ?? 0;
+      const tiers = ['free', 'pro', 'team'];
+      tiers.forEach((tier) => {
+        const card = document.querySelector(`.pricing-card[data-plan="${tier}"]`);
+        const btn = card && card.querySelector('.pricing-card-cta');
+        const manage = card && card.querySelector('.pricing-manage-link');
+        if (!btn || !manage) return;
+        const tierIdx = order[tier];
+        const isCurrent = plan === tier;
+        const isLower = tierIdx < currentIdx;
+        btn.disabled = isCurrent || isLower;
+        btn.classList.toggle('pricing-card-cta--current', isCurrent);
+        btn.classList.toggle('pricing-card-cta--included', isLower);
+        manage.style.display = isCurrent ? 'inline' : 'none';
+        if (isCurrent) {
+          btn.textContent = '현재 플랜';
+        } else if (isLower) {
+          btn.textContent = '포함됨';
+        } else if (tier === 'pro') {
+          btn.textContent = '업그레이드';
+        } else {
+          btn.textContent = '팀으로 시작';
+        }
+      });
+    }
+
+    async function openPricingPanel() {
+      const el = document.getElementById('pricingPanelOverlay');
+      if (!el) return;
+      await syncSubscriptionPlanWithPolarServer();
+      updatePricingPanelUi();
+      el.classList.add('open');
+    }
+
+    function closePricingPanel() {
+      const el = document.getElementById('pricingPanelOverlay');
+      if (!el) return;
+      el.classList.remove('open');
+    }
+
     function canSeeDock() {
-      return isLoggedIn() && isOrgScope();
+      if (!isLoggedIn()) return false;
+      if (isDockSpacesMode()) return true;
+      return isOrgScope();
     }
 
     function canCreateInviteCode() {
@@ -3197,6 +3773,126 @@
       });
     }
 
+    function renderDockWorkspaceMode(host) {
+      normalizeWorkspaceOrder();
+      const personalName = (currentUserProfile && currentUserProfile.username)
+        || currentUser?.user_metadata?.name
+        || (currentUser?.email ? currentUser.email.split('@')[0] : '개인');
+      const personalAvatar = (currentUserProfile && currentUserProfile.avatar_url)
+        || currentUser?.user_metadata?.avatar_url
+        || '';
+
+      const items = [];
+      workspaceOrder.forEach((key, workspaceIndex) => {
+        if (key === 'personal') {
+          items.push({ key, type: 'personal', workspaceIndex });
+          return;
+        }
+        const org = orgList.find((o) => `org:${o.id}` === key);
+        if (!org) return;
+        items.push({ key, type: 'organization', org, workspaceIndex });
+      });
+
+      items.forEach((item) => {
+        const wi = item.workspaceIndex;
+        const wrap = document.createElement('div');
+        wrap.className = 'user-dock-avatar-wrap';
+        wrap.draggable = true;
+
+        const tip = document.createElement('span');
+        tip.className = 'user-dock-tooltip';
+
+        let tooltipText = '';
+        let avatarInner = '';
+        if (item.type === 'personal') {
+          tooltipText = personalName || '개인';
+          const initial = getInitialLetter(personalName || 'P');
+          const pHtml = personalAvatar
+            ? `<img src="${personalAvatar}" alt="" draggable="false" onerror="this.outerHTML='<span class=\\'letter\\'>${initial}</span>'">`
+            : `<span class="letter">${initial}</span>`;
+          avatarInner = `<div class="user-dock-avatar" role="img" aria-label="${String(tooltipText).replace(/"/g, '&quot;')}">${pHtml}</div>`;
+        } else {
+          const org = item.org;
+          tooltipText = org.name || '';
+          const iconUrl = (org.icon || org.logo_url) ? (org.icon || org.logo_url) : '';
+          const oInner = iconUrl
+            ? `<img src="${iconUrl}" alt="" draggable="false" onerror="this.outerHTML='<span class=\\'letter\\'>${getInitialLetter(org.name || 'O')}</span>'">`
+            : `<span class="letter">${getInitialLetter(org.name || 'O')}</span>`;
+          avatarInner = `<div class="user-dock-avatar" role="img" aria-label="${String(org.name || '').replace(/"/g, '&quot;')}">${oInner}</div>`;
+        }
+
+        wrap.innerHTML = `
+          ${avatarInner}
+          <div class="dock-edit" title="편집" draggable="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </div>
+        `;
+        tip.textContent = tooltipText;
+        const editEl = wrap.querySelector('.dock-edit');
+        wrap.insertBefore(tip, editEl);
+        bindDockTooltipPosition(wrap, tip);
+
+        if (item.type === 'organization' && !isOwnerOfOrg(item.org)) {
+          editEl.style.display = 'none';
+        }
+
+        editEl.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (item.type === 'personal') {
+            void enterPersonalSpaceSettingsView();
+          } else {
+            void enterSpaceSettingsView(item.org);
+          }
+        });
+
+        const avatarEl = wrap.querySelector('.user-dock-avatar');
+        avatarEl.addEventListener('click', async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (item.type === 'personal') {
+            await switchScopeToPersonal();
+          } else {
+            await switchScopeToOrg(item.org.id);
+          }
+          refreshOrgSwitchSelect();
+        });
+
+        wrap.addEventListener('dragstart', (e) => {
+          if (e.target.closest('.dock-edit')) {
+            e.preventDefault();
+            return;
+          }
+          dockDragSrcIndex = wi;
+          wrap.classList.add('dragging');
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', 'dock-ws:' + wi);
+          try {
+            e.dataTransfer.setDragImage(wrap, 26, 26);
+          } catch (err) { /* ignore */ }
+        });
+        wrap.addEventListener('dragend', () => {
+          wrap.classList.remove('dragging');
+          document.querySelectorAll('.user-dock-avatar-wrap').forEach((w) => w.classList.remove('drag-over'));
+          dockDragSrcIndex = null;
+        });
+        wrap.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          if (dockDragSrcIndex === null || dockDragSrcIndex === wi) return;
+          wrap.classList.add('drag-over');
+        });
+        wrap.addEventListener('dragleave', () => wrap.classList.remove('drag-over'));
+        wrap.addEventListener('drop', async (e) => {
+          e.preventDefault();
+          wrap.classList.remove('drag-over');
+          if (dockDragSrcIndex === null || dockDragSrcIndex === wi) return;
+          await persistWorkspaceOrderAfterReorder(dockDragSrcIndex, wi);
+        });
+
+        host.appendChild(wrap);
+      });
+    }
+
     function renderDock() {
       const dockWrap = document.querySelector('.user-dock-wrap');
       const dockEl = document.getElementById('userDock');
@@ -3204,7 +3900,8 @@
       const trackEl = document.getElementById('userDockTrack');
       const visible = canSeeDock();
       dockWrap.style.display = visible ? 'flex' : 'none';
-      const showAdd = canCreateInviteCode();
+      const showAddByMode = isDockSpacesMode() ? isLoggedIn() : canCreateInviteCode();
+      const showAdd = isDockAddButtonVisible() && showAddByMode;
       addBtn.style.display = showAdd ? 'flex' : 'none';
       if (!visible) {
         wasDockVisible = false;
@@ -3222,6 +3919,10 @@
       wasDockVisible = true;
       const host = document.getElementById('userDockItems');
       host.innerHTML = '';
+      if (isDockSpacesMode()) {
+        renderDockWorkspaceMode(host);
+        return;
+      }
       dockUsers.forEach((u, idx) => {
         const wrap = document.createElement('div');
         wrap.className = 'user-dock-avatar-wrap';
@@ -3525,6 +4226,10 @@
       const orgTxt = document.getElementById('orgStatusText');
       const orgSection = document.getElementById('orgSettingsSection');
       const privacyGroup = document.querySelector('.sm-order-privacy');
+      const bgUploadInput = document.getElementById('bgUploadInput');
+      const logoUploadInput = document.getElementById('logoUploadInput');
+      const bgUploadHint = bgUploadInput ? bgUploadInput.nextElementSibling : null;
+      const logoUploadHint = logoUploadInput ? logoUploadInput.nextElementSibling : null;
       const googleBtn = document.getElementById('googleLoginBtn');
       const logoutBtn = document.getElementById('logoutBtn');
       const emailLoginBtn = document.getElementById('emailPasswordLoginBtn');
@@ -3536,11 +4241,21 @@
       reorderAccountSectionByAuth();
       if (orgSection) orgSection.style.display = loggedIn ? '' : 'none';
       if (privacyGroup) privacyGroup.style.display = loggedIn ? '' : 'none';
+      if (bgUploadInput) bgUploadInput.style.display = loggedIn ? '' : 'none';
+      if (logoUploadInput) logoUploadInput.style.display = loggedIn ? '' : 'none';
+      if (bgUploadHint && bgUploadHint.classList.contains('config-hint')) bgUploadHint.style.display = loggedIn ? '' : 'none';
+      if (logoUploadHint && logoUploadHint.classList.contains('config-hint')) logoUploadHint.style.display = loggedIn ? '' : 'none';
       if (!authBootstrapped && supabaseClient) {
         emailGroup.style.display = 'none';
         passwordGroup.style.display = 'none';
         oauthRow.style.display = 'none';
         if (signupHint) signupHint.style.display = 'none';
+        const dockBoot = document.getElementById('dockModeToggleWrap');
+        if (dockBoot) dockBoot.style.display = 'none';
+        const dockAddBoot = document.getElementById('dockAddToggleWrap');
+        if (dockAddBoot) dockAddBoot.style.display = 'none';
+        const upBoot = document.getElementById('accountUpgradeBtn');
+        if (upBoot) upBoot.style.display = 'none';
         renderSettingsProfileCard();
         return;
       }
@@ -3552,6 +4267,12 @@
         logoutBtn.style.display = 'none';
         emailLoginBtn.style.display = 'inline-flex';
         if (signupHint) signupHint.style.display = 'block';
+        const dockGuest = document.getElementById('dockModeToggleWrap');
+        if (dockGuest) dockGuest.style.display = 'none';
+        const dockAddGuest = document.getElementById('dockAddToggleWrap');
+        if (dockAddGuest) dockAddGuest.style.display = 'none';
+        const upGuest = document.getElementById('accountUpgradeBtn');
+        if (upGuest) upGuest.style.display = 'none';
       } else {
         emailGroup.style.display = 'none';
         passwordGroup.style.display = 'none';
@@ -3560,6 +4281,20 @@
         logoutBtn.style.display = 'inline-flex';
         emailLoginBtn.style.display = 'none';
         if (signupHint) signupHint.style.display = 'none';
+      }
+      const dockModeWrap = document.getElementById('dockModeToggleWrap');
+      if (dockModeWrap) {
+        dockModeWrap.style.display = loggedIn ? 'flex' : 'none';
+        if (loggedIn) updateDockModeToggleUi();
+      }
+      const dockAddWrap = document.getElementById('dockAddToggleWrap');
+      if (dockAddWrap) {
+        dockAddWrap.style.display = loggedIn ? 'flex' : 'none';
+        if (loggedIn) updateDockAddToggleUi();
+      }
+      const accountUpgradeBtn = document.getElementById('accountUpgradeBtn');
+      if (accountUpgradeBtn) {
+        accountUpgradeBtn.style.display = loggedIn ? 'block' : 'none';
       }
       renderSettingsProfileCard();
       if (!isOrgScope()) {
@@ -3782,6 +4517,21 @@
       return getInitialLetter(org.name || 'O');
     }
 
+    async function persistWorkspaceOrderAfterReorder(fromIdx, toIdx) {
+      if (fromIdx === null || fromIdx === toIdx) return;
+      const arr = [...workspaceOrder];
+      const [moved] = arr.splice(fromIdx, 1);
+      arr.splice(toIdx, 0, moved);
+      workspaceOrder = arr;
+      normalizeWorkspaceOrder();
+      syncOrgListFromWorkspaceOrder();
+      orgRankingMap = {};
+      orgList.forEach((orgItem, orderIdx) => { orgRankingMap[orgItem.id] = orderIdx + 1; });
+      refreshOrgSwitchSelect();
+      await syncLeaderLocalCacheFromServer();
+      await saveOrganizationRanking();
+    }
+
     function refreshOrgSwitchSelect() {
       const grid = document.getElementById('orgWorkspaceGrid');
       if (!grid) return;
@@ -3793,18 +4543,23 @@
       const personalAvatar = (currentUserProfile && currentUserProfile.avatar_url)
         || currentUser?.user_metadata?.avatar_url
         || '';
-      const items = workspaceOrder.map((key) => {
-        if (key === 'personal') return { key, type: 'personal' };
+      const items = [];
+      workspaceOrder.forEach((key, workspaceIndex) => {
+        if (key === 'personal') {
+          items.push({ key, type: 'personal', workspaceIndex });
+          return;
+        }
         const org = orgList.find((o) => `org:${o.id}` === key);
-        if (!org) return null;
-        return { key, type: 'organization', org };
-      }).filter(Boolean);
+        if (!org) return;
+        items.push({ key, type: 'organization', org, workspaceIndex });
+      });
 
       const clearOrgDragOver = () => {
         grid.querySelectorAll('.org-card-main, .org-card').forEach((el) => el.classList.remove('drag-over'));
       };
 
-      items.forEach((item, idx) => {
+      items.forEach((item) => {
+        const wi = item.workspaceIndex;
         const isPersonal = item.type === 'personal';
         const org = item.org;
         const personalIconHtml = personalAvatar
@@ -3818,7 +4573,7 @@
             const active = !isOrgScope();
             card.className = 'org-card' + (active ? ' active' : '');
             card.draggable = true;
-            card.dataset.orgIndex = String(idx);
+            card.dataset.orgIndex = String(wi);
             card.dataset.workspaceKey = item.key;
             card.innerHTML = `
               <div class="org-card-icon">${personalIconHtml}</div>
@@ -3829,7 +4584,7 @@
               refreshOrgSwitchSelect();
             });
             card.addEventListener('dragstart', (e) => {
-              orgDragSrcIndex = idx;
+              orgDragSrcIndex = wi;
               card.classList.add('dragging');
               e.dataTransfer.effectAllowed = 'move';
               e.dataTransfer.setData('text/plain', item.key);
@@ -3841,25 +4596,15 @@
             });
             card.addEventListener('dragover', (e) => {
               e.preventDefault();
-              if (orgDragSrcIndex === null || orgDragSrcIndex === idx) return;
+              if (orgDragSrcIndex === null || orgDragSrcIndex === wi) return;
               card.classList.add('drag-over');
             });
             card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
             card.addEventListener('drop', async (e) => {
               e.preventDefault();
               card.classList.remove('drag-over');
-              if (orgDragSrcIndex === null || orgDragSrcIndex === idx) return;
-              const arr = [...workspaceOrder];
-              const [moved] = arr.splice(orgDragSrcIndex, 1);
-              arr.splice(idx, 0, moved);
-              workspaceOrder = arr;
-              normalizeWorkspaceOrder();
-              syncOrgListFromWorkspaceOrder();
-              orgRankingMap = {};
-              orgList.forEach((orgItem, orderIdx) => { orgRankingMap[orgItem.id] = orderIdx + 1; });
-              refreshOrgSwitchSelect();
-              await syncLeaderLocalCacheFromServer();
-              await saveOrganizationRanking();
+              if (orgDragSrcIndex === null || orgDragSrcIndex === wi) return;
+              await persistWorkspaceOrderAfterReorder(orgDragSrcIndex, wi);
             });
             grid.appendChild(card);
             return;
@@ -3868,7 +4613,7 @@
           const shell = document.createElement('div');
           shell.className = 'org-card-shell';
           shell.draggable = true;
-          shell.dataset.orgIndex = String(idx);
+          shell.dataset.orgIndex = String(wi);
           shell.dataset.workspaceKey = item.key;
 
           const mainBtn = document.createElement('button');
@@ -3954,7 +4699,7 @@
               e.preventDefault();
               return;
             }
-            orgDragSrcIndex = idx;
+            orgDragSrcIndex = wi;
             mainBtn.classList.add('dragging');
             e.dataTransfer.effectAllowed = 'move';
             e.dataTransfer.setData('text/plain', item.key);
@@ -3966,25 +4711,15 @@
           });
           shell.addEventListener('dragover', (e) => {
             e.preventDefault();
-            if (orgDragSrcIndex === null || orgDragSrcIndex === idx) return;
+            if (orgDragSrcIndex === null || orgDragSrcIndex === wi) return;
             mainBtn.classList.add('drag-over');
           });
           shell.addEventListener('dragleave', () => mainBtn.classList.remove('drag-over'));
           shell.addEventListener('drop', async (e) => {
             e.preventDefault();
             mainBtn.classList.remove('drag-over');
-            if (orgDragSrcIndex === null || orgDragSrcIndex === idx) return;
-            const arr = [...workspaceOrder];
-            const [moved] = arr.splice(orgDragSrcIndex, 1);
-            arr.splice(idx, 0, moved);
-            workspaceOrder = arr;
-            normalizeWorkspaceOrder();
-            syncOrgListFromWorkspaceOrder();
-            orgRankingMap = {};
-            orgList.forEach((orgItem, orderIdx) => { orgRankingMap[orgItem.id] = orderIdx + 1; });
-            refreshOrgSwitchSelect();
-            await syncLeaderLocalCacheFromServer();
-            await saveOrganizationRanking();
+            if (orgDragSrcIndex === null || orgDragSrcIndex === wi) return;
+            await persistWorkspaceOrderAfterReorder(orgDragSrcIndex, wi);
           });
 
           shell.appendChild(mainBtn);
@@ -3995,7 +4730,7 @@
         const shell = document.createElement('div');
         shell.className = 'org-card-shell';
         shell.draggable = true;
-        shell.dataset.orgIndex = String(idx);
+        shell.dataset.orgIndex = String(wi);
         shell.dataset.workspaceKey = item.key;
 
         const mainBtn = document.createElement('button');
@@ -4105,7 +4840,7 @@
             e.preventDefault();
             return;
           }
-          orgDragSrcIndex = idx;
+          orgDragSrcIndex = wi;
           mainBtn.classList.add('dragging');
           e.dataTransfer.effectAllowed = 'move';
           e.dataTransfer.setData('text/plain', item.key);
@@ -4117,25 +4852,15 @@
         });
         shell.addEventListener('dragover', (e) => {
           e.preventDefault();
-          if (orgDragSrcIndex === null || orgDragSrcIndex === idx) return;
+          if (orgDragSrcIndex === null || orgDragSrcIndex === wi) return;
           mainBtn.classList.add('drag-over');
         });
         shell.addEventListener('dragleave', () => mainBtn.classList.remove('drag-over'));
         shell.addEventListener('drop', async (e) => {
           e.preventDefault();
           mainBtn.classList.remove('drag-over');
-          if (orgDragSrcIndex === null || orgDragSrcIndex === idx) return;
-          const arr = [...workspaceOrder];
-          const [moved] = arr.splice(orgDragSrcIndex, 1);
-          arr.splice(idx, 0, moved);
-          workspaceOrder = arr;
-          normalizeWorkspaceOrder();
-          syncOrgListFromWorkspaceOrder();
-          orgRankingMap = {};
-          orgList.forEach((orgItem, orderIdx) => { orgRankingMap[orgItem.id] = orderIdx + 1; });
-          refreshOrgSwitchSelect();
-          await syncLeaderLocalCacheFromServer();
-          await saveOrganizationRanking();
+          if (orgDragSrcIndex === null || orgDragSrcIndex === wi) return;
+          await persistWorkspaceOrderAfterReorder(orgDragSrcIndex, wi);
         });
 
         shell.appendChild(mainBtn);
@@ -4172,6 +4897,7 @@
         orgListLength: orgList.length,
         scope: `${activeScope.type}:${activeScope.orgId || 'null'}`
       });
+      renderDock();
     }
 
     async function switchScopeToPersonal() {
@@ -4478,6 +5204,7 @@
     }
 
     function closeSettingsModal() {
+      closePricingPanel();
       showSettingsMainView();
       settingsOverlay.classList.remove('open');
     }
@@ -4668,6 +5395,30 @@
     });
     settingsOverlay.addEventListener('click', (e) => {
       if (e.target === settingsOverlay) closeSettingsModal();
+    });
+    const pricingPanelOverlayEl = document.getElementById('pricingPanelOverlay');
+    if (pricingPanelOverlayEl) {
+      pricingPanelOverlayEl.addEventListener('click', (e) => {
+        if (e.target === pricingPanelOverlayEl) closePricingPanel();
+      });
+    }
+    document.getElementById('pricingPanelBackBtn')?.addEventListener('click', () => closePricingPanel());
+    document.getElementById('accountUpgradeBtn')?.addEventListener('click', () => {
+      if (!isLoggedIn()) return;
+      void openPricingPanel();
+    });
+    document.getElementById('pricingBtnPro')?.addEventListener('click', () => {
+      if (getSubscriptionPlan() !== 'free') return;
+      void startPolarCheckout('pro');
+    });
+    document.getElementById('pricingBtnTeam')?.addEventListener('click', () => {
+      if (getSubscriptionPlan() === 'team') return;
+      void startPolarCheckout('team');
+    });
+    ['pricingManageFree', 'pricingManagePro', 'pricingManageTeam'].forEach((id) => {
+      document.getElementById(id)?.addEventListener('click', () => {
+        openPolarUrl(getPolarUrls().customerPortalUrl);
+      });
     });
     document.getElementById('settingsBackBtn').addEventListener('click', () => {
       showSettingsMainView();
@@ -5012,6 +5763,8 @@
         });
         if (currentUser) {
           activeScope.pageOwnerId = currentUser.id;
+          setDebugState({ authPhase: 'refreshAuthSession:before-loadCurrentUserProfile' });
+          await loadCurrentUserProfile();
           setDebugState({ authPhase: 'refreshAuthSession:before-loadOrganizations' });
           await loadOrganizations();
           setDebugState({ authPhase: 'refreshAuthSession:after-loadOrganizations' });
@@ -5036,6 +5789,7 @@
             }
           }
         } else {
+          await loadCurrentUserProfile();
           await switchScopeToPersonal();
           refreshOrgSwitchSelect();
         }
@@ -5049,6 +5803,7 @@
         setDebugState({ authPhase: 'refreshAuthSession:error' });
       } finally {
         authBootstrapped = true;
+        void maybeVerifyPolarCheckoutFromUrl();
         updatePermissionHints();
         renderDock();
         setDebugState({ authPhase: 'refreshAuthSession:done' });
@@ -5303,7 +6058,39 @@
       });
 
       document.getElementById('generateInviteBtn').addEventListener('click', handleGenerateInviteCode);
+      const dockShowSpacesToggleEl = document.getElementById('dockShowSpacesToggle');
+      if (dockShowSpacesToggleEl) {
+        dockShowSpacesToggleEl.addEventListener('change', () => {
+          setDockSpacesMode(dockShowSpacesToggleEl.checked);
+          updateDockModeToggleUi();
+          renderDock();
+          updatePermissionHints();
+          refreshOrgSwitchSelect();
+        });
+      }
+      const dockShowAddToggleEl = document.getElementById('dockShowAddToggle');
+      if (dockShowAddToggleEl) {
+        dockShowAddToggleEl.addEventListener('change', () => {
+          setDockAddButtonVisible(dockShowAddToggleEl.checked);
+          updateDockAddToggleUi();
+          renderDock();
+        });
+      }
       document.getElementById('userDockAddBtn').addEventListener('click', () => {
+        if (isDockSpacesMode()) {
+          const overlay = document.getElementById('createOrgOverlay');
+          if (!overlay) return;
+          const nameEl = document.getElementById('orgNameInput');
+          const iconUrlEl = document.getElementById('orgIconUrlInput');
+          const bgUrlEl = document.getElementById('orgBgUrlInput');
+          const iconUploadEl = document.getElementById('orgIconUploadInput');
+          if (nameEl) nameEl.value = '';
+          if (iconUrlEl) iconUrlEl.value = '';
+          if (bgUrlEl) bgUrlEl.value = '';
+          if (iconUploadEl) iconUploadEl.value = '';
+          overlay.classList.add('open');
+          return;
+        }
         if (!isOrgScope() || !activeOrg) {
           notify('조직 모드에서만 초대 패널을 열 수 있습니다.');
           return;
@@ -5458,7 +6245,7 @@
         logoUrl = localStorage.getItem('shortcut_cached_logo_url') || logoUrl || '';
         applyTheme();
       }
-      // First paint; logged-in + Supabase session은 refreshAuthSession에서 스코프 테마로 맞춤
+      // 최우선: 첫 페인트. 세션·프로필(users)은 refreshAuthSession에서 백그라운드로 맞춘다.
       render();
       renderDock();
       updatePermissionHints();
@@ -5469,6 +6256,9 @@
         authPhase: 'initApp:after-supabase'
       });
       await bindAuthAndOrgControls();
+      if (supabaseClient) {
+        void syncAuthUiImmediately();
+      }
       document.getElementById('orgIconUploadInput').addEventListener('change', async (e) => {
         const f = e.target.files && e.target.files[0];
         if (!f) return;
@@ -5565,7 +6355,7 @@
             }
           }
         });
-        // 초기 렌더를 막지 않도록 백그라운드 동기화
+        // 초기 렌더를 막지 않도록 백그라운드 동기화(위 sync와 중복될 수 있으나 세션 복원 보강용)
         void refreshAuthSession();
       }
     }

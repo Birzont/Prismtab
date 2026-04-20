@@ -1058,6 +1058,77 @@
       background: #e8f3ff;
       border-color: #d1d6db;
     }
+    .dock-mode-toggle-wrap {
+      display: none;
+      width: 100%;
+      box-sizing: border-box;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin: 10px 0 6px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: #f8f9fa;
+      border: 1px solid #e5e8eb;
+    }
+    .dock-mode-label {
+      font-size: 11px;
+      line-height: 1.3;
+      color: #6b7684;
+      flex: 1;
+      min-width: 0;
+    }
+    .dock-mode-label--members { text-align: left; }
+    .dock-mode-label--spaces { text-align: right; }
+    .dock-mode-paren { font-weight: 600; color: #8b95a1; }
+    .dock-mode-switch {
+      position: relative;
+      display: inline-flex;
+      width: 44px;
+      height: 26px;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .dock-mode-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+    .dock-mode-slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background: #c5cdd5;
+      border-radius: 999px;
+      transition: background 0.2s ease;
+    }
+    .dock-mode-slider::before {
+      content: '';
+      position: absolute;
+      height: 20px;
+      width: 20px;
+      left: 3px;
+      bottom: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    }
+    .dock-mode-switch input:checked + .dock-mode-slider {
+      background: #2563eb;
+    }
+    .dock-mode-switch input:checked + .dock-mode-slider::before {
+      transform: translateX(18px);
+    }
+    .dock-mode-toggle-wrap .dock-mode-label.is-dimmed {
+      opacity: 0.5;
+    }
+    .dock-mode-toggle-wrap .dock-mode-label.is-active {
+      color: #273142;
+      font-weight: 700;
+      opacity: 1;
+    }
     .profile-card {
       display: none;
       gap: 10px;
@@ -1213,19 +1284,30 @@
       flex-wrap: nowrap;
     }
     #oauthAuthRow > button {
-      flex: 1 1 auto;
+      flex: 1 1 0;
       min-width: 0;
+      min-height: 41px;
     }
     #oauthAuthRow #emailPasswordLoginBtn {
-      flex: 0 0 auto;
+      flex: 1 1 0;
       align-self: stretch;
-      min-height: 41px;
-      padding-left: 16px;
-      padding-right: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      border: 1px solid #e5e8eb;
+      border-radius: 10px;
+      background: #ffffff;
+      color: #191f28;
+      padding: 10px 14px;
       font-weight: 700;
     }
+    #oauthAuthRow #emailPasswordLoginBtn:hover {
+      background: #f8f9fa;
+      border-color: #d7dce2;
+    }
     #oauthAuthRow .btn-google-auth {
-      flex: 1 1 50%;
+      flex: 1 1 0;
       width: auto;
       min-width: 0;
     }
@@ -1245,7 +1327,7 @@
       margin: 0;
       border: none;
       background: none;
-      color: #3182f6;
+      color: #8b95a1;
       font: inherit;
       font-weight: 600;
       cursor: pointer;
@@ -1617,6 +1699,188 @@
     }
     .btn-copy-export:hover {
       background: #e5e5e5;
+    }
+
+    /* Polar 요금제 패널 (설정 모달 폭의 약 3배) */
+    .pricing-panel-overlay {
+      z-index: 100050;
+      padding: 16px;
+    }
+    .pricing-panel-overlay .modal.pricing-modal-panel {
+      width: min(1180px, calc(100vw - 32px));
+      max-width: 1180px;
+      min-height: min(78vh, 720px);
+      max-height: min(96vh, 1040px);
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 28px 32px 36px;
+      border-radius: 20px;
+      border: 1px solid #c5cdd6;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+      background: #fff;
+      color: #191f28;
+    }
+    .pricing-modal-head {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .pricing-modal-head h2 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 700;
+      color: #191f28;
+    }
+    .pricing-polar-note {
+      margin: 0 0 20px;
+      font-size: 13px;
+      color: #6b7684;
+      line-height: 1.45;
+    }
+    .pricing-cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 20px;
+      align-items: stretch;
+    }
+    @media (max-width: 1100px) {
+      .pricing-cards {
+        grid-template-columns: 1fr;
+      }
+    }
+    .pricing-card {
+      border: 2px solid #c3cad4;
+      border-radius: 20px;
+      padding: 24px 22px 24px;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      min-height: min(52vh, 420px);
+    }
+    .pricing-tier-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: #191f28;
+      margin-bottom: 4px;
+    }
+    .pricing-price-line {
+      font-size: 28px;
+      font-weight: 800;
+      color: #191f28;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin-bottom: 8px;
+    }
+    .pricing-price-line .pricing-per {
+      font-size: 14px;
+      font-weight: 500;
+      color: #8b95a1;
+      margin-left: 4px;
+    }
+    .pricing-desc {
+      font-size: 13px;
+      line-height: 1.5;
+      color: #6b7684;
+      margin-bottom: 18px;
+      flex: 0 0 auto;
+    }
+    .pricing-card-cta {
+      width: 100%;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease, opacity 0.2s ease, transform 0.15s ease;
+      margin-bottom: 10px;
+      background: #191f28;
+      color: #fff;
+    }
+    .pricing-card-cta:hover:not(:disabled) {
+      opacity: 0.92;
+    }
+    .pricing-card-cta:disabled {
+      cursor: default;
+      opacity: 1;
+    }
+    .pricing-card-cta--current {
+      background: #b0b8c1;
+      color: #fff;
+    }
+    .pricing-card-cta--included {
+      background: #eef1f4;
+      color: #6b7684;
+      border: 1px solid #e5e8eb;
+    }
+    .pricing-manage-link {
+      display: none;
+      font-size: 13px;
+      font-weight: 600;
+      color: #191f28;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      margin-bottom: 16px;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      text-align: left;
+    }
+    .pricing-manage-link:hover {
+      color: #4e5968;
+    }
+    .pricing-feat-head {
+      font-size: 12px;
+      font-weight: 700;
+      color: #6b7684;
+      margin: 4px 0 10px;
+    }
+    .pricing-feat-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      flex: 1 1 auto;
+    }
+    .pricing-feat-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13px;
+      line-height: 1.45;
+      color: #333b45;
+      margin-bottom: 10px;
+    }
+    .pricing-feat-list li:last-child {
+      margin-bottom: 0;
+    }
+    .pricing-check {
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+      margin-top: 1px;
+      color: #2563eb;
+    }
+    .btn-account-upgrade {
+      display: none;
+      width: 100%;
+      box-sizing: border-box;
+      margin: 0 0 10px;
+      padding: 11px 14px;
+      border-radius: 12px;
+      border: 1px solid #191f28;
+      background: #fff;
+      color: #191f28;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    .btn-account-upgrade:hover {
+      background: #191f28;
+      color: #fff;
     }
 
     @media (max-width: 600px) {
