@@ -1766,7 +1766,7 @@
       min-height: min(52vh, 420px);
     }
     .pricing-tier-label {
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 700;
       color: #191f28;
       margin-bottom: 4px;
@@ -1813,13 +1813,13 @@
       opacity: 1;
     }
     .pricing-card-cta--current {
-      background: #b0b8c1;
+      background: #8b95a1;
       color: #fff;
     }
     .pricing-card-cta--included {
-      background: #eef1f4;
-      color: #6b7684;
-      border: 1px solid #e5e8eb;
+      background: #8b95a1;
+      color: #fff;
+      border: none;
     }
     .pricing-manage-link {
       display: none;
@@ -2405,9 +2405,13 @@
     }
 
     const DOCK_SHOW_SPACES_KEY = 'prismtab_dock_show_spaces';
-    /** Polar 연동: checkout·고객 포털 URL (배포 시 주입). 미설정 시 안내 알림만 표시 */
+    /** Polar 연동: checkout·고객 포털 URL (배포 시 주입). 포털 URL은 기본값으로 Birzont 페이지 사용 */
     window.PRISM_TAB_POLAR = Object.assign(
-      { checkoutProUrl: '', checkoutTeamUrl: '', customerPortalUrl: '' },
+      {
+        checkoutProUrl: '',
+        checkoutTeamUrl: '',
+        customerPortalUrl: 'https://polar.sh/birzont/portal/request',
+      },
       typeof window.PRISM_TAB_POLAR === 'object' && window.PRISM_TAB_POLAR ? window.PRISM_TAB_POLAR : {}
     );
     (function mergePolarPortalFromMeta() {
@@ -2513,7 +2517,14 @@
         notify('Polar 고객 포털 링크가 없습니다. meta polar-portal-url 또는 window.PRISM_TAB_POLAR.customerPortalUrl 을 설정해 주세요.');
         return;
       }
-      window.open(url, '_blank', 'noopener,noreferrer');
+      const popup = window.open(
+        url,
+        'polarPortalWindow',
+        'popup=yes,width=1080,height=840,noopener,noreferrer',
+      );
+      if (!popup) {
+        notify('팝업이 차단되었습니다. 브라우저에서 팝업 허용 후 다시 시도해 주세요.');
+      }
     }
 
     async function syncSubscriptionPlanWithPolarServer() {

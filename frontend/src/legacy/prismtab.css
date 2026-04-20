@@ -1760,7 +1760,7 @@
       min-height: min(52vh, 420px);
     }
     .pricing-tier-label {
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 700;
       color: #191f28;
       margin-bottom: 4px;
@@ -1807,13 +1807,13 @@
       opacity: 1;
     }
     .pricing-card-cta--current {
-      background: #b0b8c1;
+      background: #8b95a1;
       color: #fff;
     }
     .pricing-card-cta--included {
-      background: #eef1f4;
-      color: #6b7684;
-      border: 1px solid #e5e8eb;
+      background: #8b95a1;
+      color: #fff;
+      border: none;
     }
     .pricing-manage-link {
       display: none;
