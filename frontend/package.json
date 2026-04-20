@@ -11,7 +11,7 @@
     "predev": "npm run sync-embed",
     "prebuild": "npm run sync-embed",
     "dev": "next dev --webpack",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint"
   },
