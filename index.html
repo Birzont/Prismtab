@@ -2328,6 +2328,10 @@
         <div class="config-hint">조직 아이콘: 정사각형 이미지 권장, 100KB 이하</div>
       </div>
       <div class="form-group">
+        <label for="orgLogoUrlInput">조직 로고 URL</label>
+        <input type="url" id="orgLogoUrlInput" placeholder="예: https://.../logo.png">
+      </div>
+      <div class="form-group">
         <label for="orgBgUrlInput">조직 배경 URL</label>
         <input type="url" id="orgBgUrlInput" placeholder="예: https://.../background.jpg">
       </div>
@@ -5017,10 +5021,12 @@
           // reset fields for predictable UX
           const nameEl = document.getElementById('orgNameInput');
           const iconUrlEl = document.getElementById('orgIconUrlInput');
+          const logoUrlEl = document.getElementById('orgLogoUrlInput');
           const bgUrlEl = document.getElementById('orgBgUrlInput');
           const iconUploadEl = document.getElementById('orgIconUploadInput');
           if (nameEl) nameEl.value = '';
           if (iconUrlEl) iconUrlEl.value = '';
+          if (logoUrlEl) logoUrlEl.value = '';
           if (bgUrlEl) bgUrlEl.value = '';
           if (iconUploadEl) iconUploadEl.value = '';
           overlay.classList.add('open');
@@ -6174,6 +6180,7 @@
       document.getElementById('createOrgBtn').addEventListener('click', async () => {
         const name = document.getElementById('orgNameInput').value.trim();
         const icon = document.getElementById('orgIconUrlInput').value.trim() || null;
+        const logo = document.getElementById('orgLogoUrlInput').value.trim() || null;
         const orgBgUrl = document.getElementById('orgBgUrlInput').value.trim() || null;
         if (!name) return notify('조직 이름을 입력하세요.');
         if (!isLoggedIn() || !supabaseClient) return notify('로그인이 필요합니다.');
@@ -6183,7 +6190,7 @@
           member_user_ids: [currentUser.id],
           member_aliases: {},
           bg_url: orgBgUrl,
-          logo_url: logoUrl || null,
+          logo_url: logo,
           icon
         };
         const { error } = await supabaseClient.from('shortcut_organizations').insert(row);
@@ -6194,6 +6201,7 @@
         if (latest) await switchScopeToOrg(latest.id);
         document.getElementById('orgNameInput').value = '';
         document.getElementById('orgIconUrlInput').value = '';
+        document.getElementById('orgLogoUrlInput').value = '';
         document.getElementById('orgBgUrlInput').value = '';
         document.getElementById('orgIconUploadInput').value = '';
         createOrgOverlay.classList.remove('open');
@@ -6225,10 +6233,12 @@
           if (!overlay) return;
           const nameEl = document.getElementById('orgNameInput');
           const iconUrlEl = document.getElementById('orgIconUrlInput');
+          const logoUrlEl = document.getElementById('orgLogoUrlInput');
           const bgUrlEl = document.getElementById('orgBgUrlInput');
           const iconUploadEl = document.getElementById('orgIconUploadInput');
           if (nameEl) nameEl.value = '';
           if (iconUrlEl) iconUrlEl.value = '';
+          if (logoUrlEl) logoUrlEl.value = '';
           if (bgUrlEl) bgUrlEl.value = '';
           if (iconUploadEl) iconUploadEl.value = '';
           overlay.classList.add('open');
