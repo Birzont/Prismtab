@@ -116,9 +116,10 @@
       padding: 10px;
     }
     .shortcut-icon img {
-      width: 100%;
-      height: 100%;
+      width: 106%;
+      height: 106%;
       object-fit: contain;
+      transform: scale(1.02);
     }
     .shortcut-icon .letter {
       width: 100%;
@@ -1549,6 +1550,14 @@
       border: none;
     }
     #settingsApplyBtn:hover {
+      background: #2272eb;
+    }
+    #modalOverlay .btn-save {
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+    }
+    #modalOverlay .btn-save:hover {
       background: #2272eb;
     }
     /* settings modal 내부 간격 미세 조정 */

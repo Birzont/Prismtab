@@ -123,9 +123,10 @@
       padding: 10px;
     }
     .shortcut-icon img {
-      width: 100%;
-      height: 100%;
+      width: 106%;
+      height: 106%;
       object-fit: contain;
+      transform: scale(1.02);
     }
     .shortcut-icon .letter {
       width: 100%;
@@ -1558,6 +1559,14 @@
     #settingsApplyBtn:hover {
       background: #2272eb;
     }
+    #modalOverlay .btn-save {
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+    }
+    #modalOverlay .btn-save:hover {
+      background: #2272eb;
+    }
     /* settings modal 내부 간격 미세 조정 */
     #settingsOverlay .modal .modal-actions {
       margin-top: 16px;
@@ -1979,8 +1988,8 @@
         </div>
         <div class="form-group">
           <label>아이콘 색상</label>
-          <input type="color" id="shortcutColor" value="#4a90d9" style="width: 60px; height: 40px; padding: 2px; cursor: pointer;">
-          <div class="color-preview" id="colorPreview" style="background: #4a90d9;"></div>
+          <input type="color" id="shortcutColor" value="#ffffff" style="width: 60px; height: 40px; padding: 2px; cursor: pointer;">
+          <!-- <div class="color-preview" id="colorPreview" style="background: #4a90d9;"></div> -->
         </div>
         <div class="modal-actions">
           <button type="button" class="btn-cancel" id="cancelBtn">취소</button>
@@ -3672,10 +3681,34 @@
       return match ? match[0].toUpperCase() : '?';
     }
 
+    function normalizeShortcutUrl(rawUrl) {
+      const raw = String(rawUrl || '').trim();
+      if (!raw) return '';
+      if (/^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(raw)) return raw;
+      if (raw.startsWith('//')) return `https:${raw}`;
+      return `https://${raw}`;
+    }
+
+    function faviconUrlFromPageUrl(pageUrl) {
+      const normalized = normalizeShortcutUrl(pageUrl);
+      if (!normalized) return '';
+      try {
+        const u = new URL(normalized);
+        const host = (u.hostname || '').trim();
+        if (!host) return '';
+        return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=128`;
+      } catch (e) {
+        return '';
+      }
+    }
+
     function renderIcon(item) {
-      const bg = item.color || '#4a90d9';
       if (item.img) {
         return `<img src="${item.img}" alt="" onerror="this.parentElement.innerHTML='<span class=\\'letter\\'>${getInitialLetter(item.name)}</span>'">`;
+      }
+      const fallbackFavicon = faviconUrlFromPageUrl(item.url);
+      if (fallbackFavicon) {
+        return `<img src="${fallbackFavicon}" alt="" onerror="this.parentElement.innerHTML='<span class=\\'letter\\'>${getInitialLetter(item.name)}</span>'">`;
       }
       return `<span class="letter">${getInitialLetter(item.name)}</span>`;
     }
@@ -4410,12 +4443,13 @@
 
       pageItems.forEach((item, idx) => {
         const realIndex = start + idx;
+        const targetUrl = normalizeShortcutUrl(item.url) || item.url;
         const wrap = document.createElement('div');
         wrap.className = 'shortcut-wrap';
         wrap.draggable = true;
         wrap.dataset.index = realIndex;
         wrap.innerHTML = `
-          <a class="shortcut-item" href="${item.url}" target="_blank" rel="noopener noreferrer">
+          <a class="shortcut-item" href="${targetUrl}" target="_blank" rel="noopener noreferrer">
             <div class="shortcut-icon" style="background: ${item.color || '#4a90d9'}">${renderIcon(item)}</div>
             <span class="shortcut-label">${item.name}</span>
           </a>
@@ -4517,8 +4551,8 @@
       modalTitle.textContent = '바로가기 추가';
       form.reset();
       imgInput.value = '';
-      colorInput.value = '#4a90d9';
-      colorPreview.style.background = '#4a90d9';
+      colorInput.value = '#ffffff';
+      if (colorPreview) colorPreview.style.background = '#ffffff';
       deleteBtn.style.display = 'none';
       modal.classList.add('open');
       nameInput.focus();
@@ -4535,8 +4569,8 @@
       nameInput.value = item.name;
       urlInput.value = item.url;
       imgInput.value = item.img || '';
-      colorInput.value = item.color || '#4a90d9';
-      colorPreview.style.background = item.color || '#4a90d9';
+      colorInput.value = item.color || '#ffffff';
+      if (colorPreview) colorPreview.style.background = item.color || '#ffffff';
       deleteBtn.style.display = 'inline-block';
       deleteBtn.onclick = () => {
         shortcuts.splice(index, 1);
@@ -4552,7 +4586,7 @@
     }
 
     colorInput.addEventListener('input', () => {
-      colorPreview.style.background = colorInput.value;
+      if (colorPreview) colorPreview.style.background = colorInput.value;
     });
 
     form.addEventListener('submit', (e) => {
@@ -4569,7 +4603,7 @@
       }
       const data = {
         name: nameInput.value.trim(),
-        url: urlInput.value.trim(),
+        url: normalizeShortcutUrl(urlInput.value),
         img: imgInput.value.trim() || '',
         color: colorInput.value
       };
