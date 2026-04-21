@@ -917,6 +917,13 @@
     #settingsOverlay .modal.settings-view-space-settings.settings-view-personal-space #spaceOrgNameGroup {
       display: none !important;
     }
+    #settingsOverlay .modal.settings-view-space-settings:not(.settings-view-personal-space) #spaceOrgIconGroup {
+      display: flex !important;
+      flex-direction: column;
+    }
+    #settingsOverlay .modal.settings-view-space-settings.settings-view-personal-space #spaceOrgIconGroup {
+      display: none !important;
+    }
     #settingsOverlay .modal.settings-view-space-settings.settings-view-personal-space #personalSpaceProfileGroup {
       display: flex !important;
       flex-direction: column;
@@ -927,9 +934,10 @@
     #settingsOverlay .modal.settings-view-space-settings .sm-order-back { order: 1; }
     #settingsOverlay .modal.settings-view-space-settings .sm-order-hero { order: 2; }
     #settingsOverlay .modal.settings-view-space-settings .sm-order-nameedit { order: 3; }
-    #settingsOverlay .modal.settings-view-space-settings .sm-order-logo { order: 4; }
-    #settingsOverlay .modal.settings-view-space-settings .sm-order-bg { order: 5; }
-    #settingsOverlay .modal.settings-view-space-settings .sm-order-actions { order: 6; }
+    #settingsOverlay .modal.settings-view-space-settings .sm-order-icon { order: 4; }
+    #settingsOverlay .modal.settings-view-space-settings .sm-order-logo { order: 5; }
+    #settingsOverlay .modal.settings-view-space-settings .sm-order-bg { order: 6; }
+    #settingsOverlay .modal.settings-view-space-settings .sm-order-actions { order: 7; }
     #settingsOverlay .modal.settings-modal-panel:not(.settings-view-space-invite) #orgInviteActionsRow {
       display: none !important;
     }

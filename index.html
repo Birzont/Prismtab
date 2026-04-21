@@ -924,6 +924,13 @@
     #settingsOverlay .modal.settings-view-space-settings.settings-view-personal-space #spaceOrgNameGroup {
       display: none !important;
     }
+    #settingsOverlay .modal.settings-view-space-settings:not(.settings-view-personal-space) #spaceOrgIconGroup {
+      display: flex !important;
+      flex-direction: column;
+    }
+    #settingsOverlay .modal.settings-view-space-settings.settings-view-personal-space #spaceOrgIconGroup {
+      display: none !important;
+    }
     #settingsOverlay .modal.settings-view-space-settings.settings-view-personal-space #personalSpaceProfileGroup {
       display: flex !important;
       flex-direction: column;
@@ -934,9 +941,10 @@
     #settingsOverlay .modal.settings-view-space-settings .sm-order-back { order: 1; }
     #settingsOverlay .modal.settings-view-space-settings .sm-order-hero { order: 2; }
     #settingsOverlay .modal.settings-view-space-settings .sm-order-nameedit { order: 3; }
-    #settingsOverlay .modal.settings-view-space-settings .sm-order-logo { order: 4; }
-    #settingsOverlay .modal.settings-view-space-settings .sm-order-bg { order: 5; }
-    #settingsOverlay .modal.settings-view-space-settings .sm-order-actions { order: 6; }
+    #settingsOverlay .modal.settings-view-space-settings .sm-order-icon { order: 4; }
+    #settingsOverlay .modal.settings-view-space-settings .sm-order-logo { order: 5; }
+    #settingsOverlay .modal.settings-view-space-settings .sm-order-bg { order: 6; }
+    #settingsOverlay .modal.settings-view-space-settings .sm-order-actions { order: 7; }
     #settingsOverlay .modal.settings-modal-panel:not(.settings-view-space-invite) #orgInviteActionsRow {
       display: none !important;
     }
@@ -2023,6 +2031,10 @@
       <div class="form-group sm-stack sm-order-nameedit" id="spaceOrgNameGroup" style="display:none">
         <label for="spaceOrgNameInput">조직 이름</label>
         <input type="text" id="spaceOrgNameInput" placeholder="조직 이름">
+      </div>
+      <div class="form-group sm-stack sm-order-icon" id="spaceOrgIconGroup" style="display:none">
+        <label for="spaceOrgIconInput">조직 아이콘 URL</label>
+        <input type="url" id="spaceOrgIconInput" placeholder="https://example.com/icon.png">
       </div>
       <div class="form-group sm-stack sm-order-nameedit" id="personalSpaceProfileGroup" style="display:none">
         <label for="personalSpaceAvatarUrl">프로필 이미지 URL</label>
@@ -5258,6 +5270,8 @@
       renderSpaceSubHero(latest);
       const sni = document.getElementById('spaceOrgNameInput');
       if (sni) sni.value = latest.name || '';
+      const sii = document.getElementById('spaceOrgIconInput');
+      if (sii) sii.value = latest.icon || '';
       bgUrlInput.value = latest.bg_url || '';
       logoUrlInput.value = latest.logo_url || '';
       logoUrlInput.disabled = false;
@@ -5442,7 +5456,9 @@
       if (settingsModalMode === 'space-settings' && spaceModalContextOrg && isOwnerOfOrg(spaceModalContextOrg)) {
         (async () => {
           const nameEl = document.getElementById('spaceOrgNameInput');
+          const iconEl = document.getElementById('spaceOrgIconInput');
           const name = (nameEl && nameEl.value.trim()) || '';
+          const icon = (iconEl && iconEl.value.trim()) || null;
           if (!name) return notify('조직 이름을 입력하세요.');
           const bg = bgUrlInput.value.trim() || null;
           const logo = logoUrlInput.value.trim() || null;
@@ -5450,6 +5466,7 @@
           const oid = spaceModalContextOrg.id;
           const { error } = await supabaseClient.from('shortcut_organizations').update({
             name,
+            icon,
             bg_url: bg,
             logo_url: logo
           }).eq('id', oid);
@@ -5457,11 +5474,13 @@
           const entry = orgList.find((o) => o.id === oid);
           if (entry) {
             entry.name = name;
+            entry.icon = icon;
             entry.bg_url = bg;
             entry.logo_url = logo;
           }
           if (activeOrg && activeOrg.id === oid) {
             activeOrg.name = name;
+            activeOrg.icon = icon;
             activeOrg.bg_url = bg;
             activeOrg.logo_url = logo;
             if (isOrgScope()) {
@@ -5472,6 +5491,7 @@
           }
           if (spaceModalContextOrg && spaceModalContextOrg.id === oid) {
             spaceModalContextOrg.name = name;
+            spaceModalContextOrg.icon = icon;
             spaceModalContextOrg.bg_url = bg;
             spaceModalContextOrg.logo_url = logo;
           }
