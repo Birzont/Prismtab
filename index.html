@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="prismtab-google-client-id" content="__PRISMTAB_GOOGLE_CID__">
   <title>Prismtab Starting Page</title>
   <link rel="icon" type="image/jpeg" href="/resources/prismtabfavicon.jpeg" id="appFavicon">
   <style>
@@ -86,6 +87,12 @@
     .shortcut-wrap:active { cursor: grabbing; }
     .shortcut-wrap.dragging .shortcut-item { opacity: 0.5; }
     .shortcut-wrap.drag-over .shortcut-item { outline: 2px dashed #4a90d9; outline-offset: 4px; border-radius: 20px; }
+    .shortcut-slot-placeholder {
+      width: 100%;
+      min-height: var(--grid-row-h, 91px);
+      pointer-events: none;
+      visibility: hidden;
+    }
     .shortcut-wrap .edit-pencil {
       display: none;
       position: absolute;
@@ -172,10 +179,45 @@
     }
     .pagination {
       display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: 32px;
+      width: 100%;
+    }
+    .pagination-dots {
+      display: flex;
       justify-content: center;
       align-items: center;
       gap: 8px;
-      margin-top: 32px;
+      flex: 1;
+      min-width: 0;
+    }
+    .pagination-nav {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: transparent;
+      border-radius: 10px;
+      cursor: pointer;
+      color: #444;
+      transition: background 0.22s ease, color 0.2s ease, opacity 0.2s ease;
+      padding: 0;
+    }
+    .pagination-nav:hover:not(:disabled) {
+      background: rgba(0, 0, 0, 0.07);
+    }
+    .pagination-nav:disabled {
+      opacity: 0.32;
+      cursor: default;
+    }
+    .pagination-nav svg {
+      width: 20px;
+      height: 20px;
     }
     .pagination-dot {
       width: 8px;
@@ -1988,7 +2030,7 @@
         </div>
         <div class="form-group">
           <label for="shortcutUrl">URL</label>
-          <input type="url" id="shortcutUrl" placeholder="https://example.com" required>
+          <input type="text" id="shortcutUrl" placeholder="example.com 또는 https://…" inputmode="url" autocomplete="url" required>
         </div>
         <div class="form-group">
           <label for="shortcutImg">아이콘 이미지 URL</label>
@@ -2361,17 +2403,54 @@
       return window.innerWidth <= 600 ? 4 : 6;
     }
 
-    /** 그리드 한 페이지 칸 수 (열×2행). 추가 버튼이 1칸 차지 → 바로가기는 (칸−1)개/페이지 */
+    /** 그리드 한 페이지 칸 수 (열×2행) */
     function getCellsPerPage() {
       return getGridCols() * GRID_ROWS;
     }
 
+    /** 부분 페이지에서 +추가를 끝에 둘 때 남는 바로가기 칸 수(그리드−1) */
     function getShortcutsPerPage() {
       return Math.max(1, getCellsPerPage() - 1);
     }
 
     function getShortcutsMaxCount() {
-      return getShortcutsPerPage() * MAX_SHORTCUT_PAGES;
+      return getCellsPerPage() * MAX_SHORTCUT_PAGES;
+    }
+
+    function countShortcutDataPages(n, cells) {
+      if (n <= 0) return 0;
+      return Math.ceil(n / cells);
+    }
+
+    /** 마지막 데이터 페이지가 꽉 찼거나 항목 0개 → 맨 앞이 +인 페이지를 한 장 붙임 */
+    function needsTrailingAddFirstPage(n, cells) {
+      if (n === 0) return true;
+      return n % cells === 0;
+    }
+
+    function getAddFirstOnlyPageIndex(n, cells) {
+      if (!needsTrailingAddFirstPage(n, cells)) return -1;
+      return countShortcutDataPages(n, cells);
+    }
+
+    /**
+     * pageKind: 'addFirstOnly' | 'dataFull' | 'dataWithAddEnd'
+     * shortcuts 구간은 [start, start+count)
+     */
+    function getShortcutPageSliceBounds(pageIndex, totalCount) {
+      const cells = getCellsPerPage();
+      const addFirstIdx = getAddFirstOnlyPageIndex(totalCount, cells);
+      if (addFirstIdx >= 0 && pageIndex === addFirstIdx) {
+        return { start: 0, count: 0, pageKind: 'addFirstOnly' };
+      }
+      const start = pageIndex * cells;
+      if (start >= totalCount) {
+        return { start: 0, count: 0, pageKind: 'dataFull' };
+      }
+      const count = Math.min(cells, totalCount - start);
+      const isLastDataPage = start + count >= totalCount;
+      const pageKind = isLastDataPage && count < cells ? 'dataWithAddEnd' : 'dataFull';
+      return { start, count, pageKind };
     }
 
     function enforceShortcutCapacity() {
@@ -2383,10 +2462,13 @@
     }
 
     function getTotalShortcutPages() {
-      const spp = getShortcutsPerPage();
-      if (shortcuts.length === 0) return 1;
-      const raw = Math.ceil(shortcuts.length / spp);
-      return Math.min(MAX_SHORTCUT_PAGES, Math.max(1, raw));
+      const n = shortcuts.length;
+      const cells = getCellsPerPage();
+      const dataPages = countShortcutDataPages(n, cells);
+      const tail = needsTrailingAddFirstPage(n, cells);
+      const raw = dataPages + (tail ? 1 : 0);
+      const maxNav = MAX_SHORTCUT_PAGES + 1;
+      return Math.min(maxNav, Math.max(1, raw));
     }
 
     function isLoggedIn() {
@@ -4446,88 +4528,114 @@
       }
     }
 
+    function appendShortcutPlaceholderCells(grid, count) {
+      for (let i = 0; i < count; i += 1) {
+        const ph = document.createElement('div');
+        ph.className = 'shortcut-slot-placeholder';
+        ph.setAttribute('aria-hidden', 'true');
+        grid.appendChild(ph);
+      }
+    }
+
     function render() {
       clampShortcutPage();
-      const spp = getShortcutsPerPage();
+      const cells = getCellsPerPage();
       const grid = document.getElementById('shortcutsGrid');
       const pagination = document.getElementById('pagination');
       grid.innerHTML = '';
 
-      const start = currentPage * spp;
-      const pageItems = shortcuts.slice(start, start + spp);
       const totalPages = getTotalShortcutPages();
+      const bounds = getShortcutPageSliceBounds(currentPage, shortcuts.length);
+      const start = bounds.start;
+      const pageItems = shortcuts.slice(start, start + bounds.count);
 
-      pageItems.forEach((item, idx) => {
-        const realIndex = start + idx;
-        const targetUrl = normalizeShortcutUrl(item.url) || item.url;
-        const wrap = document.createElement('div');
-        wrap.className = 'shortcut-wrap';
-        wrap.draggable = true;
-        wrap.dataset.index = realIndex;
-        wrap.innerHTML = `
-          <a class="shortcut-item" href="${targetUrl}" target="_blank" rel="noopener noreferrer">
-            <div class="shortcut-icon" style="background: ${item.color || '#4a90d9'}">${renderIcon(item)}</div>
-            <span class="shortcut-label">${item.name}</span>
-          </a>
-          <div class="edit-pencil" title="편집">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          </div>
-        `;
-        if (!canEditCurrentPage()) {
-          wrap.querySelector('.edit-pencil').style.display = 'none';
-          wrap.draggable = false;
+      if (bounds.pageKind === 'addFirstOnly') {
+        if (canEditCurrentPage()) {
+          const addEl = document.createElement('div');
+          addEl.className = 'shortcut-item';
+          addEl.innerHTML = `
+            <div class="add-btn"><span>+</span></div>
+            <span class="add-label">추가</span>
+          `;
+          addEl.addEventListener('click', () => openAddModal());
+          grid.appendChild(addEl);
+          appendShortcutPlaceholderCells(grid, Math.max(0, cells - 1));
+        } else {
+          appendShortcutPlaceholderCells(grid, cells);
         }
-        wrap.addEventListener('contextmenu', (e) => {
-          e.preventDefault();
-          openEditModal(realIndex);
+      } else {
+        pageItems.forEach((item, idx) => {
+          const realIndex = start + idx;
+          const targetUrl = normalizeShortcutUrl(item.url) || item.url;
+          const wrap = document.createElement('div');
+          wrap.className = 'shortcut-wrap';
+          wrap.draggable = true;
+          wrap.dataset.index = realIndex;
+          wrap.innerHTML = `
+            <a class="shortcut-item" href="${targetUrl}" target="_blank" rel="noopener noreferrer">
+              <div class="shortcut-icon" style="background: ${item.color || '#4a90d9'}">${renderIcon(item)}</div>
+              <span class="shortcut-label">${item.name}</span>
+            </a>
+            <div class="edit-pencil" title="편집">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </div>
+          `;
+          if (!canEditCurrentPage()) {
+            wrap.querySelector('.edit-pencil').style.display = 'none';
+            wrap.draggable = false;
+          }
+          wrap.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            openEditModal(realIndex);
+          });
+          wrap.querySelector('.edit-pencil').addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openEditModal(realIndex);
+          });
+          wrap.addEventListener('dragstart', (e) => {
+            if (e.target.closest('.edit-pencil')) { e.preventDefault(); return; }
+            dragSrcIndex = realIndex;
+            wrap.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', realIndex);
+            e.dataTransfer.setDragImage(wrap, 40, 40);
+          });
+          wrap.addEventListener('dragend', () => {
+            wrap.classList.remove('dragging');
+            document.querySelectorAll('.shortcut-wrap').forEach(w => w.classList.remove('drag-over'));
+            dragSrcIndex = null;
+          });
+          wrap.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            if (dragSrcIndex === null) return;
+            wrap.classList.add('drag-over');
+          });
+          wrap.addEventListener('dragleave', () => wrap.classList.remove('drag-over'));
+          wrap.addEventListener('drop', (e) => {
+            e.preventDefault();
+            wrap.classList.remove('drag-over');
+            if (dragSrcIndex === null || dragSrcIndex === realIndex) return;
+            const arr = [...shortcuts];
+            const [removed] = arr.splice(dragSrcIndex, 1);
+            const insertIdx = dragSrcIndex < realIndex ? realIndex - 1 : realIndex;
+            arr.splice(insertIdx, 0, removed);
+            shortcuts = arr;
+            saveShortcuts();
+          });
+          grid.appendChild(wrap);
         });
-        wrap.querySelector('.edit-pencil').addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          openEditModal(realIndex);
-        });
-        wrap.addEventListener('dragstart', (e) => {
-          if (e.target.closest('.edit-pencil')) { e.preventDefault(); return; }
-          dragSrcIndex = realIndex;
-          wrap.classList.add('dragging');
-          e.dataTransfer.effectAllowed = 'move';
-          e.dataTransfer.setData('text/plain', realIndex);
-          e.dataTransfer.setDragImage(wrap, 40, 40);
-        });
-        wrap.addEventListener('dragend', () => {
-          wrap.classList.remove('dragging');
-          document.querySelectorAll('.shortcut-wrap').forEach(w => w.classList.remove('drag-over'));
-          dragSrcIndex = null;
-        });
-        wrap.addEventListener('dragover', (e) => {
-          e.preventDefault();
-          if (dragSrcIndex === null) return;
-          wrap.classList.add('drag-over');
-        });
-        wrap.addEventListener('dragleave', () => wrap.classList.remove('drag-over'));
-        wrap.addEventListener('drop', (e) => {
-          e.preventDefault();
-          wrap.classList.remove('drag-over');
-          if (dragSrcIndex === null || dragSrcIndex === realIndex) return;
-          const arr = [...shortcuts];
-          const [removed] = arr.splice(dragSrcIndex, 1);
-          const insertIdx = dragSrcIndex < realIndex ? realIndex - 1 : realIndex;
-          arr.splice(insertIdx, 0, removed);
-          shortcuts = arr;
-          saveShortcuts();
-        });
-        grid.appendChild(wrap);
-      });
 
-      if (canEditCurrentPage()) {
-        const addEl = document.createElement('div');
-        addEl.className = 'shortcut-item';
-        addEl.innerHTML = `
-          <div class="add-btn"><span>+</span></div>
-          <span class="add-label">추가</span>
-        `;
-        addEl.addEventListener('click', () => openAddModal());
-        grid.appendChild(addEl);
+        if (bounds.pageKind === 'dataWithAddEnd' && canEditCurrentPage()) {
+          const addEl = document.createElement('div');
+          addEl.className = 'shortcut-item';
+          addEl.innerHTML = `
+            <div class="add-btn"><span>+</span></div>
+            <span class="add-label">추가</span>
+          `;
+          addEl.addEventListener('click', () => openAddModal());
+          grid.appendChild(addEl);
+        }
       }
 
       pagination.innerHTML = '';
@@ -4535,14 +4643,42 @@
         pagination.style.display = 'none';
       } else {
         pagination.style.display = 'flex';
+        const navSvg = (d) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+        const prevBtn = document.createElement('button');
+        prevBtn.type = 'button';
+        prevBtn.className = 'pagination-nav';
+        prevBtn.setAttribute('aria-label', '이전 페이지');
+        prevBtn.innerHTML = navSvg('<path d="M15 18l-6-6 6-6"/>');
+        prevBtn.disabled = currentPage <= 0;
+        prevBtn.addEventListener('click', () => {
+          if (currentPage <= 0) return;
+          currentPage -= 1;
+          render();
+        });
+        const dotsWrap = document.createElement('div');
+        dotsWrap.className = 'pagination-dots';
         for (let i = 0; i < totalPages; i++) {
           const dot = document.createElement('div');
           dot.className = 'pagination-dot' + (i === currentPage ? ' active' : '');
           dot.setAttribute('role', 'tab');
           dot.setAttribute('aria-label', `페이지 ${i + 1}`);
           dot.addEventListener('click', () => { currentPage = i; render(); });
-          pagination.appendChild(dot);
+          dotsWrap.appendChild(dot);
         }
+        const nextBtn = document.createElement('button');
+        nextBtn.type = 'button';
+        nextBtn.className = 'pagination-nav';
+        nextBtn.setAttribute('aria-label', '다음 페이지');
+        nextBtn.innerHTML = navSvg('<path d="M9 18l6-6-6-6"/>');
+        nextBtn.disabled = currentPage >= totalPages - 1;
+        nextBtn.addEventListener('click', () => {
+          if (currentPage >= totalPages - 1) return;
+          currentPage += 1;
+          render();
+        });
+        pagination.appendChild(prevBtn);
+        pagination.appendChild(dotsWrap);
+        pagination.appendChild(nextBtn);
       }
       refreshAppBranding();
     }
@@ -4553,6 +4689,10 @@
     const editIndexInput = document.getElementById('editIndex');
     const nameInput = document.getElementById('shortcutName');
     const urlInput = document.getElementById('shortcutUrl');
+    urlInput.addEventListener('blur', () => {
+      const n = normalizeShortcutUrl(urlInput.value);
+      if (n) urlInput.value = n;
+    });
     const imgInput = document.getElementById('shortcutImg');
     const colorInput = document.getElementById('shortcutColor');
     const colorPreview = document.getElementById('colorPreview');
@@ -4614,12 +4754,19 @@
       const idx = parseInt(editIndexInput.value, 10);
       const cap = getShortcutsMaxCount();
       if (idx < 0 && shortcuts.length >= cap) {
-        alert(`바로가기는 최대 ${cap}개까지 저장할 수 있습니다. (${MAX_SHORTCUT_PAGES}페이지·한 페이지당 ${getShortcutsPerPage()}개 제한)`);
+        alert(`바로가기는 최대 ${cap}개까지 저장할 수 있습니다. (페이지당 최대 ${getCellsPerPage()}칸·데이터 페이지 최대 ${MAX_SHORTCUT_PAGES}장)`);
         return;
       }
+      const normalizedUrl = normalizeShortcutUrl(urlInput.value);
+      if (!normalizedUrl) {
+        notify('URL을 입력해 주세요.');
+        urlInput.focus();
+        return;
+      }
+      urlInput.value = normalizedUrl;
       const data = {
         name: nameInput.value.trim(),
-        url: normalizeShortcutUrl(urlInput.value),
+        url: normalizedUrl,
         img: imgInput.value.trim() || '',
         color: colorInput.value
       };
@@ -4627,6 +4774,10 @@
         shortcuts[idx] = data;
       } else {
         shortcuts.push(data);
+        const cellsAfter = getCellsPerPage();
+        if (needsTrailingAddFirstPage(shortcuts.length, cellsAfter)) {
+          currentPage = Math.max(0, getTotalShortcutPages() - 1);
+        }
       }
       saveShortcuts();
       closeModal();
@@ -5975,6 +6126,113 @@
       await refreshAuthSession();
     }
 
+    function getPrismtabGoogleClientIdFromMeta() {
+      const m = document.querySelector('meta[name="prismtab-google-client-id"]');
+      const raw = m ? String(m.getAttribute('content') || '').trim() : '';
+      if (!raw || raw === '__PRISMTAB_GOOGLE_CID__') return '';
+      return raw;
+    }
+
+    let prismtabGisLoadPromise = null;
+    function loadGisScriptOnce() {
+      if (window.google && window.google.accounts && window.google.accounts.id) {
+        return Promise.resolve();
+      }
+      if (prismtabGisLoadPromise) return prismtabGisLoadPromise;
+      prismtabGisLoadPromise = new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://accounts.google.com/gsi/client';
+        s.async = true;
+        s.defer = true;
+        s.onload = () => resolve();
+        s.onerror = () => reject(new Error('Google 로그인 스크립트를 불러오지 못했습니다.'));
+        document.head.appendChild(s);
+      });
+      return prismtabGisLoadPromise;
+    }
+
+    async function signInWithGooglePreferred() {
+      if (!supabaseClient) {
+        notify('Supabase 연결 설정이 비어있습니다. 코드의 고정 설정값을 확인하세요.');
+        return;
+      }
+      const clientId = getPrismtabGoogleClientIdFromMeta();
+      if (!clientId) {
+        const { error } = await supabaseClient.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo: location.href }
+        });
+        if (error) notify(error.message);
+        return;
+      }
+      try {
+        await loadGisScriptOnce();
+        await new Promise((resolve, reject) => {
+          let done = false;
+          const finish = (err) => {
+            if (done) return;
+            done = true;
+            if (err) reject(err);
+            else resolve();
+          };
+          try {
+            if (window.google && window.google.accounts && window.google.accounts.id) {
+              window.google.accounts.id.cancel();
+            }
+          } catch (e) { /* ignore */ }
+          window.google.accounts.id.initialize({
+            client_id: clientId,
+            auto_select: false,
+            callback: async (response) => {
+              try {
+                const credential = response && response.credential;
+                if (!credential) {
+                  finish(new Error('Google에서 로그인 정보를 받지 못했습니다.'));
+                  return;
+                }
+                const { error } = await supabaseClient.auth.signInWithIdToken({
+                  provider: 'google',
+                  token: credential,
+                });
+                if (error) {
+                  finish(error);
+                  return;
+                }
+                await syncAuthUiImmediately();
+                clearRuntimeError();
+                notify('로그인되었습니다.');
+                try {
+                  closeSettingsModal();
+                } catch (e) { /* ignore */ }
+                finish(null);
+              } catch (e) {
+                finish(e);
+              }
+            },
+          });
+          window.google.accounts.id.prompt((notification) => {
+            if (!notification) return;
+            if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+              void (async () => {
+                try {
+                  const { error } = await supabaseClient.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: { redirectTo: location.href }
+                  });
+                  if (error) notify(error.message);
+                } catch (e) {
+                  notify(e && e.message ? e.message : String(e));
+                }
+              })();
+            }
+          });
+        });
+      } catch (e) {
+        const msg = e && e.message ? e.message : String(e);
+        notify(msg);
+      }
+    }
+
     async function bindAuthAndOrgControls() {
       let clearedGuestCacheOnLogin = false;
       document.getElementById('emailPasswordLoginBtn').addEventListener('click', async () => {
@@ -6130,13 +6388,8 @@
         });
       }
 
-      document.getElementById('googleLoginBtn').addEventListener('click', async () => {
-        if (!supabaseClient) return notify('Supabase 연결 설정이 비어있습니다. 코드의 고정 설정값을 확인하세요.');
-        const { error } = await supabaseClient.auth.signInWithOAuth({
-          provider: 'google',
-          options: { redirectTo: location.href }
-        });
-        if (error) notify(error.message);
+      document.getElementById('googleLoginBtn').addEventListener('click', () => {
+        void signInWithGooglePreferred();
       });
 
       document.getElementById('logoutBtn').addEventListener('click', async () => {

@@ -5,6 +5,14 @@ import { NextResponse } from "next/server";
  */
 export const runtime = "edge";
 
+function escapeHtmlAttributeValue(s: string) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/'/g, "&#39;");
+}
+
 export async function GET(req: Request) {
   const embedUrl = new URL("/embed.html", req.url);
   const embedRes = await fetch(embedUrl.toString(), { method: "GET" });
@@ -14,7 +22,12 @@ export async function GET(req: Request) {
       { status: 500 },
     );
   }
-  const html = await embedRes.text();
+  const raw = await embedRes.text();
+  const cid = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? "";
+  const html = raw.replaceAll(
+    "__PRISMTAB_GOOGLE_CID__",
+    escapeHtmlAttributeValue(cid),
+  );
   return new Response(html, {
     headers: {
       "content-type": "text/html; charset=utf-8",

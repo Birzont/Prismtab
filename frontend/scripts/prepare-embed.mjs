@@ -18,7 +18,52 @@ const outCss = path.join(frontendRoot, "src", "legacy", "prismtab.css");
 const faviconSrc = path.join(repoRoot, "resources", "prismtabfavicon.jpeg");
 const faviconOut = path.join(frontendRoot, "public", "resources", "prismtabfavicon.jpeg");
 
-const html = fs.readFileSync(indexPath, "utf8");
+let html = fs.readFileSync(indexPath, "utf8");
+
+function normalizeEnvValue(raw) {
+  const v = String(raw || "").trim();
+  if (!v) return "";
+  if (
+    (v.startsWith('"') && v.endsWith('"')) ||
+    (v.startsWith("'") && v.endsWith("'"))
+  ) {
+    return v.slice(1, -1);
+  }
+  const inlineCommentIdx = v.indexOf(" #");
+  return inlineCommentIdx >= 0 ? v.slice(0, inlineCommentIdx).trimEnd() : v;
+}
+
+function loadRootEnvForEmbed() {
+  const rootEnvPath = path.join(repoRoot, ".env.local");
+  if (!fs.existsSync(rootEnvPath)) return;
+  const source = fs.readFileSync(rootEnvPath, "utf8");
+  for (const line of source.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const eqIdx = trimmed.indexOf("=");
+    if (eqIdx <= 0) continue;
+    const key = trimmed.slice(0, eqIdx).trim();
+    if (!key || process.env[key]) continue;
+    const value = normalizeEnvValue(trimmed.slice(eqIdx + 1));
+    process.env[key] = value;
+  }
+}
+
+function escapeHtmlAttributeValue(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/'/g, "&#39;");
+}
+
+loadRootEnvForEmbed();
+const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
+html = html.replaceAll(
+  "__PRISMTAB_GOOGLE_CID__",
+  escapeHtmlAttributeValue(googleClientId),
+);
+
 const styleMatch = html.match(/<style>\s*([\s\S]*?)\s*<\/style>/);
 if (!styleMatch) {
   console.error("prepare-embed: index.html 안에 <style> 블록이 없습니다.");

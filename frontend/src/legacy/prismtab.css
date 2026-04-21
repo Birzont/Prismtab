@@ -79,6 +79,12 @@
     .shortcut-wrap:active { cursor: grabbing; }
     .shortcut-wrap.dragging .shortcut-item { opacity: 0.5; }
     .shortcut-wrap.drag-over .shortcut-item { outline: 2px dashed #4a90d9; outline-offset: 4px; border-radius: 20px; }
+    .shortcut-slot-placeholder {
+      width: 100%;
+      min-height: var(--grid-row-h, 91px);
+      pointer-events: none;
+      visibility: hidden;
+    }
     .shortcut-wrap .edit-pencil {
       display: none;
       position: absolute;
@@ -165,10 +171,45 @@
     }
     .pagination {
       display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: 32px;
+      width: 100%;
+    }
+    .pagination-dots {
+      display: flex;
       justify-content: center;
       align-items: center;
       gap: 8px;
-      margin-top: 32px;
+      flex: 1;
+      min-width: 0;
+    }
+    .pagination-nav {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: transparent;
+      border-radius: 10px;
+      cursor: pointer;
+      color: #444;
+      transition: background 0.22s ease, color 0.2s ease, opacity 0.2s ease;
+      padding: 0;
+    }
+    .pagination-nav:hover:not(:disabled) {
+      background: rgba(0, 0, 0, 0.07);
+    }
+    .pagination-nav:disabled {
+      opacity: 0.32;
+      cursor: default;
+    }
+    .pagination-nav svg {
+      width: 20px;
+      height: 20px;
     }
     .pagination-dot {
       width: 8px;
