@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>웹페이지 z 바로가기</title>
+  <link rel="icon" type="image/jpeg" href="/resources/prismtabfavicon.jpeg" id="appFavicon">
   <style>
     * {
       margin: 0;
@@ -2405,6 +2406,7 @@
     }
 
     const DOCK_SHOW_SPACES_KEY = 'prismtab_dock_show_spaces';
+    const DEFAULT_FAVICON_URL = '/resources/prismtabfavicon.jpeg';
     /** Polar 연동: checkout·고객 포털 URL (배포 시 주입). 포털 URL은 기본값으로 Birzont 페이지 사용 */
     window.PRISM_TAB_POLAR = Object.assign(
       {
@@ -2421,8 +2423,63 @@
         if (v && String(v).trim()) window.PRISM_TAB_POLAR.customerPortalUrl = String(v).trim();
       } catch (e) { /* ignore */ }
     })();
+    const DEFAULT_APP_TITLE = document.title || '웹페이지 z 바로가기';
     const SUBSCRIPTION_PLAN_KEY = 'prismtab_subscription_plan';
     const DOCK_SHOW_ADD_BTN_KEY = 'prismtab_dock_show_add_btn';
+
+    function ensureFaviconLinkEl() {
+      let el = document.getElementById('appFavicon');
+      if (!el) {
+        el = document.createElement('link');
+        el.id = 'appFavicon';
+        el.rel = 'icon';
+        el.type = 'image/jpeg';
+        document.head.appendChild(el);
+      }
+      return el;
+    }
+
+    function setFaviconUrl(url) {
+      const nextUrl = (url || '').trim() || DEFAULT_FAVICON_URL;
+      const el = ensureFaviconLinkEl();
+      if (el.getAttribute('href') !== nextUrl) {
+        el.setAttribute('href', nextUrl);
+      }
+    }
+
+    function resolvePersonalDisplayName() {
+      if (!isLoggedIn() || !currentUser) return '';
+      const profileName = (currentUserProfile?.username || '').trim();
+      if (profileName) return profileName;
+      const metaName = typeof currentUser.user_metadata?.name === 'string'
+        ? currentUser.user_metadata.name.trim()
+        : '';
+      if (metaName) return metaName;
+      if (currentUser.email) return String(currentUser.email).split('@')[0];
+      return '';
+    }
+
+    function resolveBrandingFromCurrentScope() {
+      if (isOrgScope() && activeOrg) {
+        const orgTitle = (activeOrg.name || '').trim() || DEFAULT_APP_TITLE;
+        const orgIcon = (activeOrg.icon || activeOrg.logo_url || '').trim();
+        return { title: orgTitle, favicon: orgIcon || DEFAULT_FAVICON_URL };
+      }
+      if (isLoggedIn()) {
+        const personalTitle = resolvePersonalDisplayName() || DEFAULT_APP_TITLE;
+        const avatar = (currentUserProfile?.avatar_url || currentUser?.user_metadata?.avatar_url || '').trim();
+        return { title: personalTitle, favicon: avatar || DEFAULT_FAVICON_URL };
+      }
+      return { title: DEFAULT_APP_TITLE, favicon: DEFAULT_FAVICON_URL };
+    }
+
+    function refreshAppBranding() {
+      const branding = resolveBrandingFromCurrentScope();
+      setFaviconUrl(branding.favicon);
+      if (document.title !== branding.title) {
+        document.title = branding.title;
+      }
+    }
 
     function isDockSpacesMode() {
       try {
@@ -3076,6 +3133,7 @@
           localStorage.setItem('shortcut_workspace_leader_user_id', uid);
         }
       }
+      refreshAppBranding();
     }
 
     function syncOrgListFromWorkspaceOrder() {
@@ -3233,6 +3291,7 @@
       } else {
         logoArea.innerHTML = '';
       }
+      refreshAppBranding();
     }
 
     function parseShortcutDocPayload(raw) {
@@ -3375,6 +3434,7 @@
       } else {
         activeOrg = null;
       }
+      refreshAppBranding();
     }
 
     async function loadOrganizationRanking() {
@@ -3721,6 +3781,7 @@
     async function loadCurrentUserProfile() {
       if (!supabaseClient || !isLoggedIn()) {
         currentUserProfile = { username: '', avatar_url: '' };
+        refreshAppBranding();
         return;
       }
       const cached = userProfileCache[currentUser.id];
@@ -3729,6 +3790,7 @@
           username: cached.username || '',
           avatar_url: cached.avatar_url || ''
         };
+        refreshAppBranding();
         return;
       }
       const { data, error } = await withLockRetry(async () =>
@@ -3741,6 +3803,7 @@
       if (error) {
         if (!isLockError(error)) console.warn('[profile/load-current-user]', error);
         currentUserProfile = { username: '', avatar_url: '' };
+        refreshAppBranding();
         return;
       }
       const row = (data && data[0]) ? data[0] : {};
@@ -3749,6 +3812,7 @@
         avatar_url: row.avatar_url || ''
       };
       userProfileCache[currentUser.id] = { ...currentUserProfile };
+      refreshAppBranding();
     }
 
     async function hydrateDockUsersFromProfiles() {
@@ -4430,6 +4494,7 @@
           pagination.appendChild(dot);
         }
       }
+      refreshAppBranding();
     }
 
     const modal = document.getElementById('modalOverlay');

@@ -15,6 +15,8 @@ const repoRoot = path.join(frontendRoot, "..");
 const indexPath = path.join(repoRoot, "index.html");
 const outEmbed = path.join(frontendRoot, "public", "embed.html");
 const outCss = path.join(frontendRoot, "src", "legacy", "prismtab.css");
+const faviconSrc = path.join(repoRoot, "resources", "prismtabfavicon.jpeg");
+const faviconOut = path.join(frontendRoot, "public", "resources", "prismtabfavicon.jpeg");
 
 const html = fs.readFileSync(indexPath, "utf8");
 const styleMatch = html.match(/<style>\s*([\s\S]*?)\s*<\/style>/);
@@ -34,4 +36,11 @@ fs.writeFileSync(
 fs.mkdirSync(path.dirname(outEmbed), { recursive: true });
 fs.writeFileSync(outEmbed, html, "utf8");
 
-console.log("prepare-embed: src/legacy/prismtab.css, public/embed.html 갱신됨");
+if (fs.existsSync(faviconSrc)) {
+  fs.mkdirSync(path.dirname(faviconOut), { recursive: true });
+  fs.copyFileSync(faviconSrc, faviconOut);
+} else {
+  console.warn("prepare-embed: favicon source not found:", faviconSrc);
+}
+
+console.log("prepare-embed: src/legacy/prismtab.css, public/embed.html, public/resources/prismtabfavicon.jpeg 갱신됨");
