@@ -610,6 +610,78 @@
       height: 22px;
       opacity: 0.7;
     }
+
+    .first-visit-startpage-banner {
+      display: none;
+      position: fixed;
+      top: max(16px, env(safe-area-inset-top, 0px));
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(640px, calc(100% - 32px));
+      z-index: 450;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    .first-visit-startpage-banner.is-visible {
+      display: flex;
+    }
+    .first-visit-startpage-banner-inner {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px 16px;
+      padding: 14px 18px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+    }
+    .first-visit-startpage-banner-text {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 600;
+      color: #191f28;
+      line-height: 1.45;
+      flex: 1 1 220px;
+    }
+    .first-visit-startpage-banner-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .first-visit-startpage-banner-btn {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      background: #4a90d9;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(74, 144, 217, 0.35);
+      transition: background 0.15s, transform 0.15s;
+    }
+    .first-visit-startpage-banner-btn:hover {
+      background: #3d7bc4;
+      transform: translateY(-1px);
+    }
+    .first-visit-startpage-banner-dismiss {
+      border: none;
+      background: transparent;
+      color: #8b95a1;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 8px 6px;
+    }
+    .first-visit-startpage-banner-dismiss:hover {
+      color: #4e5968;
+    }
+
     .modal textarea {
       width: 100%;
       padding: 12px 14px;
@@ -1973,6 +2045,15 @@
   </style>
 </head>
 <body>
+  <div id="firstVisitStartPageBanner" class="first-visit-startpage-banner" role="region" aria-label="시작 페이지 안내">
+    <div class="first-visit-startpage-banner-inner">
+      <p class="first-visit-startpage-banner-text">시작페이지로 설정하고 더 빠르게 움직이세요</p>
+      <div class="first-visit-startpage-banner-actions">
+        <button type="button" id="firstVisitStartPageBtn" class="first-visit-startpage-banner-btn">시작 페이지 설정</button>
+        <button type="button" id="firstVisitStartPageDismiss" class="first-visit-startpage-banner-dismiss">닫기</button>
+      </div>
+    </div>
+  </div>
   <div class="page-main">
     <div class="container">
       <div class="card">
@@ -3127,6 +3208,71 @@
       } catch (e) {
         return fallback;
       }
+    }
+
+    const PRISMTAB_STARTPAGE_INTRO_DONE_KEY = 'prismtab_startpage_intro_done';
+
+    function markPrismtabStartpageIntroDone() {
+      try {
+        localStorage.setItem(PRISMTAB_STARTPAGE_INTRO_DONE_KEY, '1');
+      } catch (e) { /* ignore */ }
+    }
+
+    function migratePrismtabStartpageIntroForReturningUsers() {
+      try {
+        if (localStorage.getItem(PRISMTAB_STARTPAGE_INTRO_DONE_KEY)) return;
+        if (localStorage.getItem('shortcuts') != null) {
+          markPrismtabStartpageIntroDone();
+          return;
+        }
+        if (localStorage.getItem('theme') != null) {
+          markPrismtabStartpageIntroDone();
+          return;
+        }
+        const dockRaw = localStorage.getItem('dockUsers');
+        if (dockRaw) {
+          const arr = safeJsonParse(dockRaw, []);
+          if (Array.isArray(arr) && arr.length > 0) {
+            markPrismtabStartpageIntroDone();
+            return;
+          }
+        }
+        if (localStorage.getItem('shortcut_leader_cache_user_id')) {
+          markPrismtabStartpageIntroDone();
+          return;
+        }
+      } catch (e) { /* ignore */ }
+    }
+
+    function shouldShowPrismtabStartpageIntro() {
+      try {
+        migratePrismtabStartpageIntroForReturningUsers();
+        return !localStorage.getItem(PRISMTAB_STARTPAGE_INTRO_DONE_KEY);
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function initPrismtabStartpageIntroBanner() {
+      const banner = document.getElementById('firstVisitStartPageBanner');
+      const btn = document.getElementById('firstVisitStartPageBtn');
+      const dismiss = document.getElementById('firstVisitStartPageDismiss');
+      if (!banner || !btn || !dismiss) return;
+      if (!shouldShowPrismtabStartpageIntro()) return;
+      banner.classList.add('is-visible');
+      const closeBanner = () => {
+        markPrismtabStartpageIntroDone();
+        banner.classList.remove('is-visible');
+      };
+      btn.addEventListener('click', async () => {
+        try {
+          await setPersonalAsDefaultStartPage();
+          closeBanner();
+        } catch (e) {
+          if (!isLockError(e)) console.warn('[startpage-intro]', e);
+        }
+      });
+      dismiss.addEventListener('click', closeBanner);
     }
 
     /** Supabase 세션이 로컬에 있으면 곧 서버 스코프 테마가 올 것이므로, generic theme 키로 배경을 한 번 깔지 않는다 */
@@ -6672,6 +6818,7 @@
       if (supabaseClient) {
         void syncAuthUiImmediately();
       }
+      initPrismtabStartpageIntroBanner();
       document.getElementById('orgIconUploadInput').addEventListener('change', async (e) => {
         const f = e.target.files && e.target.files[0];
         if (!f) return;
