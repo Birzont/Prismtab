@@ -17,6 +17,13 @@ const outEmbed = path.join(frontendRoot, "public", "embed.html");
 const outCss = path.join(frontendRoot, "src", "legacy", "prismtab.css");
 const faviconSrc = path.join(repoRoot, "resources", "prismtabfavicon.jpeg");
 const faviconOut = path.join(frontendRoot, "public", "resources", "prismtabfavicon.jpeg");
+const signupDefaultsSrc = path.join(repoRoot, "lib", "user-signup-defaults.js");
+const signupDefaultsOut = path.join(
+  frontendRoot,
+  "public",
+  "lib",
+  "user-signup-defaults.js",
+);
 
 let html = fs.readFileSync(indexPath, "utf8");
 
@@ -59,9 +66,19 @@ function escapeHtmlAttributeValue(s) {
 
 loadRootEnvForEmbed();
 const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 html = html.replaceAll(
   "__PRISMTAB_GOOGLE_CID__",
   escapeHtmlAttributeValue(googleClientId),
+);
+html = html.replaceAll(
+  "__PRISMTAB_SUPABASE_URL__",
+  escapeHtmlAttributeValue(supabaseUrl),
+);
+html = html.replaceAll(
+  "__PRISMTAB_SUPABASE_ANON_KEY__",
+  escapeHtmlAttributeValue(supabaseAnonKey),
 );
 
 const styleMatch = html.match(/<style>\s*([\s\S]*?)\s*<\/style>/);
@@ -86,6 +103,16 @@ if (fs.existsSync(faviconSrc)) {
   fs.copyFileSync(faviconSrc, faviconOut);
 } else {
   console.warn("prepare-embed: favicon source not found:", faviconSrc);
+}
+
+if (fs.existsSync(signupDefaultsSrc)) {
+  fs.mkdirSync(path.dirname(signupDefaultsOut), { recursive: true });
+  fs.copyFileSync(signupDefaultsSrc, signupDefaultsOut);
+} else {
+  console.warn(
+    "prepare-embed: signup defaults source not found:",
+    signupDefaultsSrc,
+  );
 }
 
 console.log("prepare-embed: src/legacy/prismtab.css, public/embed.html, public/resources/prismtabfavicon.jpeg 갱신됨");

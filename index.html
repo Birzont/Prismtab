@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="prismtab-google-client-id" content="__PRISMTAB_GOOGLE_CID__">
+  <meta name="prismtab-supabase-url" content="__PRISMTAB_SUPABASE_URL__">
+  <meta name="prismtab-supabase-anon-key" content="__PRISMTAB_SUPABASE_ANON_KEY__">
   <title>Prismtab Starting Page</title>
   <link rel="icon" type="image/jpeg" href="/resources/prismtabfavicon.jpeg" id="appFavicon">
   <style>
@@ -2993,15 +2995,21 @@
       notify('시작 페이지로 설정했습니다.');
     }
 
+    function getMetaEnvValue(metaName) {
+      const el = document.querySelector(`meta[name="${metaName}"]`);
+      if (!el) return '';
+      const raw = String(el.getAttribute('content') || '').trim();
+      if (!raw || /^__PRISMTAB_[A-Z0-9_]+__$/.test(raw)) return '';
+      return raw;
+    }
+
     function getSupabaseConfig() {
       const parsed = safeJsonParse(localStorage.getItem('shortcut_supabase_config'), {});
-      const hardcoded = {
-        url: 'https://fanlqfaphmayjxaavjrh.supabase.co',
-        anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZhbmxxZmFwaG1heWp4YWF2anJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY5NzMzMjgsImV4cCI6MjA2MjU0OTMyOH0.uF25iL8b445XNLRITVhn6Iqf6J8u9KRDI0XTg5djuPE'
-      };
+      const envUrl = getMetaEnvValue('prismtab-supabase-url');
+      const envAnonKey = getMetaEnvValue('prismtab-supabase-anon-key');
       return {
-        url: hardcoded.url || parsed.url || '',
-        anonKey: hardcoded.anonKey || parsed.anonKey || ''
+        url: envUrl || parsed.url || '',
+        anonKey: envAnonKey || parsed.anonKey || ''
       };
     }
 
@@ -6129,11 +6137,14 @@
     function getPrismtabGoogleClientIdFromMeta() {
       const m = document.querySelector('meta[name="prismtab-google-client-id"]');
       const raw = m ? String(m.getAttribute('content') || '').trim() : '';
-      if (!raw || raw === '__PRISMTAB_GOOGLE_CID__') return '';
+      if (!raw || /^__PRISMTAB_[A-Z0-9_]+__$/.test(raw)) return '';
       return raw;
     }
 
     let prismtabGisLoadPromise = null;
+    let prismtabGisInitializedClientId = '';
+    let prismtabGisPendingResolve = null;
+    let prismtabGisPendingReject = null;
     function loadGisScriptOnce() {
       if (window.google && window.google.accounts && window.google.accounts.id) {
         return Promise.resolve();
@@ -6151,6 +6162,47 @@
       return prismtabGisLoadPromise;
     }
 
+    function initGisOnce(clientId) {
+      if (prismtabGisInitializedClientId === clientId) return;
+      window.google.accounts.id.initialize({
+        client_id: clientId,
+        auto_select: false,
+        use_fedcm_for_prompt: false,
+        callback: async (response) => {
+          const resolve = prismtabGisPendingResolve;
+          const reject = prismtabGisPendingReject;
+          prismtabGisPendingResolve = null;
+          prismtabGisPendingReject = null;
+          if (!resolve || !reject) return;
+          try {
+            const credential = response && response.credential;
+            if (!credential) {
+              reject(new Error('Google에서 로그인 정보를 받지 못했습니다.'));
+              return;
+            }
+            const { error } = await supabaseClient.auth.signInWithIdToken({
+              provider: 'google',
+              token: credential,
+            });
+            if (error) {
+              reject(error);
+              return;
+            }
+            await syncAuthUiImmediately();
+            clearRuntimeError();
+            notify('로그인되었습니다.');
+            try {
+              closeSettingsModal();
+            } catch (e) { /* ignore */ }
+            resolve();
+          } catch (e) {
+            reject(e);
+          }
+        },
+      });
+      prismtabGisInitializedClientId = clientId;
+    }
+
     async function signInWithGooglePreferred() {
       if (!supabaseClient) {
         notify('Supabase 연결 설정이 비어있습니다. 코드의 고정 설정값을 확인하세요.');
@@ -6158,72 +6210,61 @@
       }
       const clientId = getPrismtabGoogleClientIdFromMeta();
       if (!clientId) {
-        const { error } = await supabaseClient.auth.signInWithOAuth({
-          provider: 'google',
-          options: { redirectTo: location.href }
-        });
-        if (error) notify(error.message);
+        notify('NEXT_PUBLIC_GOOGLE_CLIENT_ID 값이 없어 Google 로그인(GIS)을 시작할 수 없습니다.');
         return;
       }
       try {
         await loadGisScriptOnce();
+        initGisOnce(clientId);
         await new Promise((resolve, reject) => {
-          let done = false;
-          const finish = (err) => {
-            if (done) return;
-            done = true;
-            if (err) reject(err);
-            else resolve();
+          const timeoutId = setTimeout(() => {
+            prismtabGisPendingResolve = null;
+            prismtabGisPendingReject = null;
+            reject(new Error('Google 로그인 응답 시간이 초과되었습니다. 다시 시도해 주세요.'));
+          }, 30000);
+          prismtabGisPendingResolve = () => {
+            clearTimeout(timeoutId);
+            resolve();
+          };
+          prismtabGisPendingReject = (err) => {
+            clearTimeout(timeoutId);
+            reject(err);
           };
           try {
             if (window.google && window.google.accounts && window.google.accounts.id) {
               window.google.accounts.id.cancel();
             }
           } catch (e) { /* ignore */ }
-          window.google.accounts.id.initialize({
-            client_id: clientId,
-            auto_select: false,
-            callback: async (response) => {
-              try {
-                const credential = response && response.credential;
-                if (!credential) {
-                  finish(new Error('Google에서 로그인 정보를 받지 못했습니다.'));
-                  return;
-                }
-                const { error } = await supabaseClient.auth.signInWithIdToken({
-                  provider: 'google',
-                  token: credential,
-                });
-                if (error) {
-                  finish(error);
-                  return;
-                }
-                await syncAuthUiImmediately();
-                clearRuntimeError();
-                notify('로그인되었습니다.');
-                try {
-                  closeSettingsModal();
-                } catch (e) { /* ignore */ }
-                finish(null);
-              } catch (e) {
-                finish(e);
-              }
-            },
-          });
           window.google.accounts.id.prompt((notification) => {
             if (!notification) return;
-            if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-              void (async () => {
-                try {
-                  const { error } = await supabaseClient.auth.signInWithOAuth({
-                    provider: 'google',
-                    options: { redirectTo: location.href }
-                  });
-                  if (error) notify(error.message);
-                } catch (e) {
-                  notify(e && e.message ? e.message : String(e));
-                }
-              })();
+            if (typeof notification.isDismissedMoment === 'function' && notification.isDismissedMoment()) {
+              const reason = (typeof notification.getDismissedReason === 'function' && notification.getDismissedReason()) || 'dismissed';
+              if (prismtabGisPendingReject) {
+                const r = prismtabGisPendingReject;
+                prismtabGisPendingReject = null;
+                prismtabGisPendingResolve = null;
+                r(new Error(`Google 로그인 창이 닫혔습니다. (${reason})`));
+              }
+              return;
+            }
+            if (typeof notification.isNotDisplayedMoment === 'function' && notification.isNotDisplayedMoment()) {
+              const reason = (typeof notification.getNotDisplayedReason === 'function' && notification.getNotDisplayedReason()) || 'not_displayed';
+              if (prismtabGisPendingReject) {
+                const r = prismtabGisPendingReject;
+                prismtabGisPendingReject = null;
+                prismtabGisPendingResolve = null;
+                r(new Error(`Google 로그인 UI를 띄우지 못했습니다. (${reason})`));
+              }
+              return;
+            }
+            if (typeof notification.isSkippedMoment === 'function' && notification.isSkippedMoment()) {
+              const reason = (typeof notification.getSkippedReason === 'function' && notification.getSkippedReason()) || 'skipped';
+              if (prismtabGisPendingReject) {
+                const r = prismtabGisPendingReject;
+                prismtabGisPendingReject = null;
+                prismtabGisPendingResolve = null;
+                r(new Error(`Google 로그인 시도가 건너뛰어졌습니다. (${reason})`));
+              }
             }
           });
         });

@@ -24,10 +24,18 @@ export async function GET(req: Request) {
   }
   const raw = await embedRes.text();
   const cid = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? "";
-  const html = raw.replaceAll(
-    "__PRISMTAB_GOOGLE_CID__",
-    escapeHtmlAttributeValue(cid),
-  );
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
+  const html = raw
+    .replaceAll("__PRISMTAB_GOOGLE_CID__", escapeHtmlAttributeValue(cid))
+    .replaceAll(
+      "__PRISMTAB_SUPABASE_URL__",
+      escapeHtmlAttributeValue(supabaseUrl),
+    )
+    .replaceAll(
+      "__PRISMTAB_SUPABASE_ANON_KEY__",
+      escapeHtmlAttributeValue(supabaseAnonKey),
+    );
   return new Response(html, {
     headers: {
       "content-type": "text/html; charset=utf-8",
