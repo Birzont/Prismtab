@@ -17,13 +17,6 @@ const outEmbed = path.join(frontendRoot, "public", "embed.html");
 const outCss = path.join(frontendRoot, "src", "legacy", "prismtab.css");
 const faviconSrc = path.join(repoRoot, "resources", "prismtabfavicon.jpeg");
 const faviconOut = path.join(frontendRoot, "public", "resources", "prismtabfavicon.jpeg");
-const signupDefaultsSrc = path.join(repoRoot, "lib", "user-signup-defaults.js");
-const signupDefaultsOut = path.join(
-  frontendRoot,
-  "public",
-  "lib",
-  "user-signup-defaults.js",
-);
 
 let html = fs.readFileSync(indexPath, "utf8");
 
@@ -103,16 +96,6 @@ if (fs.existsSync(faviconSrc)) {
   fs.copyFileSync(faviconSrc, faviconOut);
 } else {
   console.warn("prepare-embed: favicon source not found:", faviconSrc);
-}
-
-if (fs.existsSync(signupDefaultsSrc)) {
-  fs.mkdirSync(path.dirname(signupDefaultsOut), { recursive: true });
-  fs.copyFileSync(signupDefaultsSrc, signupDefaultsOut);
-} else {
-  console.warn(
-    "prepare-embed: signup defaults source not found:",
-    signupDefaultsSrc,
-  );
 }
 
 console.log("prepare-embed: src/legacy/prismtab.css, public/embed.html, public/resources/prismtabfavicon.jpeg 갱신됨");
