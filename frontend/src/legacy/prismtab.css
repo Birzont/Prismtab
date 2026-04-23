@@ -643,33 +643,26 @@
       gap: 8px;
       flex-shrink: 0;
     }
-    .first-visit-startpage-banner-btn {
-      border: none;
-      border-radius: 10px;
-      padding: 10px 16px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      background: #4a90d9;
-      color: #fff;
-      box-shadow: 0 2px 8px rgba(74, 144, 217, 0.35);
-      transition: background 0.15s, transform 0.15s;
-    }
-    .first-visit-startpage-banner-btn:hover {
-      background: #3d7bc4;
-      transform: translateY(-1px);
-    }
     .first-visit-startpage-banner-dismiss {
       border: none;
       background: transparent;
       color: #8b95a1;
-      font-size: 13px;
-      font-weight: 500;
       cursor: pointer;
-      padding: 8px 6px;
+      padding: 6px;
+      line-height: 0;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.15s, color 0.15s;
+    }
+    .first-visit-startpage-banner-dismiss svg {
+      width: 20px;
+      height: 20px;
     }
     .first-visit-startpage-banner-dismiss:hover {
       color: #4e5968;
+      background: rgba(0, 0, 0, 0.05);
     }
 
     .modal textarea {
@@ -1014,7 +1007,8 @@
     #settingsOverlay .modal.settings-view-space-settings .sm-order-org,
     #settingsOverlay .modal.settings-view-space-settings .sm-order-privacy,
     #settingsOverlay .modal.settings-view-space-settings .sm-order-bulk,
-    #settingsOverlay .modal.settings-view-space-settings .sm-order-invite-email {
+    #settingsOverlay .modal.settings-view-space-settings .sm-order-invite-email,
+    #settingsOverlay .modal.settings-view-space-settings #settingsStartPageSection {
       display: none !important;
     }
     #settingsOverlay .modal.settings-view-space-settings .settings-modal-back {
@@ -1063,7 +1057,8 @@
     #settingsOverlay .modal.settings-view-space-invite .sm-order-bg,
     #settingsOverlay .modal.settings-view-space-invite .sm-order-logo,
     #settingsOverlay .modal.settings-view-space-invite .sm-order-nameedit,
-    #settingsOverlay .modal.settings-view-space-invite .sm-order-actions {
+    #settingsOverlay .modal.settings-view-space-invite .sm-order-actions,
+    #settingsOverlay .modal.settings-view-space-invite #settingsStartPageSection {
       display: none !important;
     }
     #settingsOverlay .modal.settings-view-space-invite .settings-modal-back {
@@ -1123,7 +1118,8 @@
     #settingsOverlay .modal.settings-view-signup .sm-order-logo,
     #settingsOverlay .modal.settings-view-signup .sm-order-privacy,
     #settingsOverlay .modal.settings-view-signup .sm-order-bulk,
-    #settingsOverlay .modal.settings-view-signup .sm-order-actions {
+    #settingsOverlay .modal.settings-view-signup .sm-order-actions,
+    #settingsOverlay .modal.settings-view-signup #settingsStartPageSection {
       display: none !important;
     }
     #settingsOverlay .modal.settings-view-signup .settings-modal-back {
@@ -1671,6 +1667,22 @@
       border: none;
     }
     #settingsApplyBtn:hover {
+      background: #2272eb;
+    }
+    #firstVisitStartPageBtn,
+    #settingsStartPageBtn {
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #firstVisitStartPageBtn:hover,
+    #settingsStartPageBtn:hover {
       background: #2272eb;
     }
     #modalOverlay .btn-save {

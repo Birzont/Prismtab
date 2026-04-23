@@ -653,33 +653,26 @@
       gap: 8px;
       flex-shrink: 0;
     }
-    .first-visit-startpage-banner-btn {
-      border: none;
-      border-radius: 10px;
-      padding: 10px 16px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      background: #4a90d9;
-      color: #fff;
-      box-shadow: 0 2px 8px rgba(74, 144, 217, 0.35);
-      transition: background 0.15s, transform 0.15s;
-    }
-    .first-visit-startpage-banner-btn:hover {
-      background: #3d7bc4;
-      transform: translateY(-1px);
-    }
     .first-visit-startpage-banner-dismiss {
       border: none;
       background: transparent;
       color: #8b95a1;
-      font-size: 13px;
-      font-weight: 500;
       cursor: pointer;
-      padding: 8px 6px;
+      padding: 6px;
+      line-height: 0;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.15s, color 0.15s;
+    }
+    .first-visit-startpage-banner-dismiss svg {
+      width: 20px;
+      height: 20px;
     }
     .first-visit-startpage-banner-dismiss:hover {
       color: #4e5968;
+      background: rgba(0, 0, 0, 0.05);
     }
 
     .modal textarea {
@@ -1024,7 +1017,8 @@
     #settingsOverlay .modal.settings-view-space-settings .sm-order-org,
     #settingsOverlay .modal.settings-view-space-settings .sm-order-privacy,
     #settingsOverlay .modal.settings-view-space-settings .sm-order-bulk,
-    #settingsOverlay .modal.settings-view-space-settings .sm-order-invite-email {
+    #settingsOverlay .modal.settings-view-space-settings .sm-order-invite-email,
+    #settingsOverlay .modal.settings-view-space-settings #settingsStartPageSection {
       display: none !important;
     }
     #settingsOverlay .modal.settings-view-space-settings .settings-modal-back {
@@ -1073,7 +1067,8 @@
     #settingsOverlay .modal.settings-view-space-invite .sm-order-bg,
     #settingsOverlay .modal.settings-view-space-invite .sm-order-logo,
     #settingsOverlay .modal.settings-view-space-invite .sm-order-nameedit,
-    #settingsOverlay .modal.settings-view-space-invite .sm-order-actions {
+    #settingsOverlay .modal.settings-view-space-invite .sm-order-actions,
+    #settingsOverlay .modal.settings-view-space-invite #settingsStartPageSection {
       display: none !important;
     }
     #settingsOverlay .modal.settings-view-space-invite .settings-modal-back {
@@ -1133,7 +1128,8 @@
     #settingsOverlay .modal.settings-view-signup .sm-order-logo,
     #settingsOverlay .modal.settings-view-signup .sm-order-privacy,
     #settingsOverlay .modal.settings-view-signup .sm-order-bulk,
-    #settingsOverlay .modal.settings-view-signup .sm-order-actions {
+    #settingsOverlay .modal.settings-view-signup .sm-order-actions,
+    #settingsOverlay .modal.settings-view-signup #settingsStartPageSection {
       display: none !important;
     }
     #settingsOverlay .modal.settings-view-signup .settings-modal-back {
@@ -1683,6 +1679,22 @@
     #settingsApplyBtn:hover {
       background: #2272eb;
     }
+    #firstVisitStartPageBtn,
+    #settingsStartPageBtn {
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #firstVisitStartPageBtn:hover,
+    #settingsStartPageBtn:hover {
+      background: #2272eb;
+    }
     #modalOverlay .btn-save {
       background: #2563eb;
       color: #ffffff;
@@ -2049,8 +2061,10 @@
     <div class="first-visit-startpage-banner-inner">
       <p class="first-visit-startpage-banner-text">시작페이지로 설정하고 더 빠르게 움직이세요</p>
       <div class="first-visit-startpage-banner-actions">
-        <button type="button" id="firstVisitStartPageBtn" class="first-visit-startpage-banner-btn">시작 페이지 설정</button>
-        <button type="button" id="firstVisitStartPageDismiss" class="first-visit-startpage-banner-dismiss">닫기</button>
+        <button type="button" id="firstVisitStartPageBtn">시작 페이지 설정</button>
+        <button type="button" id="firstVisitStartPageDismiss" class="first-visit-startpage-banner-dismiss" aria-label="닫기">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
       </div>
     </div>
   </div>
@@ -2179,6 +2193,11 @@
           </button>
         </div>
         <div class="config-hint">기본 메일 앱으로 초대 링크가 담긴 메일 작성 화면이 열립니다.</div>
+      </div>
+      <div class="settings-section sm-stack sm-order-startpage" id="settingsStartPageSection" style="display: none;">
+        <h3>시작페이지로 설정하기</h3>
+        <p class="muted-text" style="margin: 0 0 12px;">개인 스페이스를 새 탭에서 가장 먼저 열리도록 지정합니다.</p>
+        <button type="button" id="settingsStartPageBtn">시작 페이지로 설정</button>
       </div>
       <div class="settings-section sm-stack sm-order-account" id="accountSettingsSection">
         <h3>계정 / 인증</h3>
@@ -4014,7 +4033,11 @@
     }
 
     function reorderAccountSectionByAuth() {
-      if (settingsModalMode === 'signup') return;
+      if (settingsModalMode === 'signup') {
+        const startEarly = document.getElementById('settingsStartPageSection');
+        if (startEarly) startEarly.style.display = 'none';
+        return;
+      }
       const modal = document.querySelector('#settingsOverlay .modal');
       const accountSection = document.getElementById('accountSettingsSection');
       if (!modal || !accountSection) return;
@@ -4030,6 +4053,28 @@
         if (title && title.nextSibling !== accountSection) {
           modal.insertBefore(accountSection, title.nextSibling);
         }
+      }
+      placeSettingsStartPageSection();
+    }
+
+    function placeSettingsStartPageSection() {
+      const section = document.getElementById('settingsStartPageSection');
+      const modal = document.querySelector('#settingsOverlay .modal.settings-modal-panel');
+      if (!section || !modal) return;
+      if (settingsModalMode !== 'main') {
+        section.style.display = 'none';
+        return;
+      }
+      section.style.display = '';
+      const bgUrlEl = document.getElementById('bgUrl');
+      const bgGroup = bgUrlEl ? bgUrlEl.closest('.form-group') : null;
+      const accountSection = document.getElementById('accountSettingsSection');
+      if (isLoggedIn()) {
+        if (accountSection && accountSection.parentNode === modal) {
+          modal.insertBefore(section, accountSection);
+        }
+      } else if (bgGroup && bgGroup.parentNode === modal) {
+        modal.insertBefore(section, bgGroup);
       }
     }
 
@@ -4537,6 +4582,7 @@
       if (hi && !hi.value.trim()) setHandle(generateRandomHandle());
       isHandleAvailable = null;
       scheduleSignupHandleCheck();
+      placeSettingsStartPageSection();
     }
 
     const PRIVACY_POLICY_MD_URL = 'https://birzont.com/policy/policy.md';
@@ -5449,6 +5495,7 @@
         orgCardOpenDropdown.style.display = 'none';
         orgCardOpenDropdown = null;
       }
+      placeSettingsStartPageSection();
     }
 
     function renderPersonalSpaceHero() {
@@ -5845,6 +5892,9 @@
         console.warn('settings-open-fallback', e);
         settingsOverlay.classList.add('open');
       }
+    });
+    document.getElementById('settingsStartPageBtn')?.addEventListener('click', () => {
+      void setPersonalAsDefaultStartPage();
     });
     settingsOverlay.addEventListener('click', (e) => {
       if (e.target === settingsOverlay) closeSettingsModal();
