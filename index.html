@@ -6141,20 +6141,41 @@
       return u.toString();
     }
 
+    function parseInviteCode(raw) {
+      const text = String(raw || '').trim();
+      if (!text) return '';
+      try {
+        if (/^https?:\/\//i.test(text)) {
+          const url = new URL(text);
+          const invite = (url.searchParams.get('invite') || '').trim();
+          return invite.toUpperCase();
+        }
+      } catch (e) { /* ignore and fallback */ }
+      return text.toUpperCase();
+    }
+
     async function openInviteAcceptByCode(code) {
-      if (!code || !supabaseClient || !isLoggedIn()) return;
+      const normalized = parseInviteCode(code);
+      if (!normalized || !supabaseClient || !isLoggedIn()) return;
       const { data, error } = await supabaseClient
         .from('shortcut_organizations')
         .select('*')
-        .eq('invite_code', code)
+        .eq('invite_code', normalized)
         .limit(1);
-      if (error || !data || !data[0]) return;
+      if (error) {
+        notify('가입 코드 조회 중 오류가 발생했습니다: ' + (error.message || 'unknown'));
+        return;
+      }
+      if (!data || !data[0]) {
+        notify('유효한 조직 가입 코드를 찾지 못했습니다.');
+        return;
+      }
       const org = data[0];
       if (!org.invite_expires_at || new Date(org.invite_expires_at).getTime() < Date.now()) {
         notify('초대 코드가 만료되었습니다.');
         return;
       }
-      pendingInviteCode = code;
+      pendingInviteCode = normalized;
       document.getElementById('inviteAcceptText').textContent = `${org.name}에 가입할까요?`;
       const logo = document.getElementById('inviteOrgLogo');
       if (org.logo_url) {
@@ -6178,12 +6199,22 @@
         return;
       }
       const org = data[0];
+      if (!org.invite_expires_at || new Date(org.invite_expires_at).getTime() < Date.now()) {
+        notify('초대 코드가 만료되었습니다.');
+        pendingInviteCode = null;
+        document.getElementById('inviteAcceptOverlay').classList.remove('open');
+        return;
+      }
       const memberIds = getOrgMemberIds(org);
       if (!memberIds.includes(currentUser.id)) memberIds.push(currentUser.id);
-      await supabaseClient
+      const { error: joinErr } = await supabaseClient
         .from('shortcut_organizations')
         .update({ member_user_ids: memberIds })
         .eq('id', org.id);
+      if (joinErr) {
+        notify('조직 가입 처리 중 오류가 발생했습니다: ' + (joinErr.message || 'unknown'));
+        return;
+      }
       pendingInviteCode = null;
       document.getElementById('inviteAcceptOverlay').classList.remove('open');
       await loadOrganizations();
@@ -6745,9 +6776,11 @@
       });
 
       document.getElementById('joinOrgBtn').addEventListener('click', async () => {
-        const code = document.getElementById('joinCodeInput').value.trim();
+        const raw = document.getElementById('joinCodeInput').value.trim();
+        const code = parseInviteCode(raw);
         if (!code) return notify('가입 코드를 입력하세요.');
         if (!isLoggedIn()) return notify('로그인이 필요합니다.');
+        document.getElementById('joinCodeInput').value = code;
         await openInviteAcceptByCode(code);
       });
 
