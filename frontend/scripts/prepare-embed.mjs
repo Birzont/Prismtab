@@ -17,6 +17,8 @@ const outEmbed = path.join(frontendRoot, "public", "embed.html");
 const outCss = path.join(frontendRoot, "src", "legacy", "prismtab.css");
 const faviconSrc = path.join(repoRoot, "resources", "prismtabfavicon.jpeg");
 const faviconOut = path.join(frontendRoot, "public", "resources", "prismtabfavicon.jpeg");
+const languageProviderSrc = path.join(repoRoot, "languageprovider.js");
+const languageProviderOut = path.join(frontendRoot, "public", "languageprovider.js");
 
 let html = fs.readFileSync(indexPath, "utf8");
 
@@ -98,4 +100,11 @@ if (fs.existsSync(faviconSrc)) {
   console.warn("prepare-embed: favicon source not found:", faviconSrc);
 }
 
-console.log("prepare-embed: src/legacy/prismtab.css, public/embed.html, public/resources/prismtabfavicon.jpeg 갱신됨");
+if (fs.existsSync(languageProviderSrc)) {
+  fs.mkdirSync(path.dirname(languageProviderOut), { recursive: true });
+  fs.copyFileSync(languageProviderSrc, languageProviderOut);
+} else {
+  console.warn("prepare-embed: languageprovider.js source not found:", languageProviderSrc);
+}
+
+console.log("prepare-embed: src/legacy/prismtab.css, public/embed.html, public/resources/prismtabfavicon.jpeg, public/languageprovider.js 갱신됨");

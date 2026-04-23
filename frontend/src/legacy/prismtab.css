@@ -774,6 +774,145 @@
     html[data-ui-theme="dark"] #settingsOverlay .modal textarea::placeholder {
       color: #9aa5b5;
     }
+    html[data-ui-theme="dark"] #settingsOverlay .org-card,
+    html[data-ui-theme="dark"] #settingsOverlay .org-card-shell .org-card-main {
+      background: #3b4547;
+      box-shadow: 0 0 0 1px #6a787b inset;
+      color: #eef4f4;
+    }
+    html[data-ui-theme="dark"] #settingsOverlay .org-card:hover,
+    html[data-ui-theme="dark"] #settingsOverlay .org-card-shell:hover .org-card-main,
+    html[data-ui-theme="dark"] #settingsOverlay .org-card.active,
+    html[data-ui-theme="dark"] #settingsOverlay .org-card-shell .org-card-main.active {
+      box-shadow: 0 0 0 1.5px #f1f7f7 inset;
+    }
+    html[data-ui-theme="dark"] #settingsOverlay .org-card.org-create-card {
+      background: #465153;
+    }
+    html[data-ui-theme="dark"] #settingsOverlay .org-card-icon {
+      background: #4a5558;
+      border-color: #647174;
+      color: #eef4f4;
+    }
+    html[data-ui-theme="dark"] #settingsOverlay .org-card-name,
+    html[data-ui-theme="dark"] #settingsOverlay .org-card-kebab {
+      color: #eef4f4;
+    }
+    html[data-ui-theme="dark"] #settingsOverlay .org-card-kebab:hover {
+      background: #4d5a5d;
+    }
+    html[data-ui-theme="dark"] #settingsOverlay .org-card-dropdown {
+      background: #374143;
+      border-color: #5e6b6e;
+      color: #eef4f4;
+    }
+    html[data-ui-theme="dark"] #settingsOverlay .org-card-dropdown button.org-card-dropdown-item {
+      color: #eef4f4;
+    }
+    html[data-ui-theme="dark"] #settingsOverlay .org-card-dropdown button.org-card-dropdown-item:hover {
+      background: #4b575a;
+    }
+    html[data-ui-theme="dark"] #settingsOverlay .fancy-file-input {
+      color: #d9e3e3;
+      border-color: #667477;
+      background: #3c4648;
+    }
+    html[data-ui-theme="dark"] #settingsOverlay .privacy-toggle {
+      background: #3c4648;
+      color: #e8f0f0;
+    }
+    html[data-ui-theme="dark"] #settingsOverlay .privacy-toggle input[type="checkbox"] {
+      background: #7f8c90;
+    }
+    html[data-ui-theme="dark"] #settingsOverlay .dock-mode-toggle-wrap {
+      background: #3a4446;
+      border-color: #5f6d70;
+    }
+    html[data-ui-theme="dark"] #settingsOverlay .dock-mode-toggle-wrap .dock-mode-label.is-active {
+      color: #f1f7f7;
+    }
+    html[data-ui-theme="dark"] #spaceSubHeroTitle,
+    html[data-ui-theme="dark"] #settingsBackBtn,
+    html[data-ui-theme="dark"] #settingsBackBtn .settings-back-icon {
+      color: #f1f7f7;
+    }
+    html[data-ui-theme="dark"] #settingsBackBtn:hover {
+      background: #4b5557;
+      color: #f1f7f7;
+    }
+    html[data-ui-theme="dark"] #modalOverlay .modal {
+      background: #343d3f;
+      color: #eef4f4;
+      border: 1px solid #5f6d70;
+    }
+    html[data-ui-theme="dark"] #modalOverlay .modal h2,
+    html[data-ui-theme="dark"] #modalOverlay .modal label {
+      color: #eef4f4;
+    }
+    html[data-ui-theme="dark"] #modalOverlay .modal input,
+    html[data-ui-theme="dark"] #modalOverlay .modal textarea,
+    html[data-ui-theme="dark"] #modalOverlay .modal select {
+      background: #3f494b;
+      color: #eef4f4;
+      border: 1px solid #647174;
+    }
+    html[data-ui-theme="dark"] #modalOverlay .modal input::placeholder,
+    html[data-ui-theme="dark"] #modalOverlay .modal textarea::placeholder {
+      color: #b9c4c6;
+    }
+    html[data-ui-theme="dark"] #createOrgOverlay .modal {
+      background: #343d3f;
+      color: #eef4f4;
+      border: 1px solid #5f6d70;
+    }
+    html[data-ui-theme="dark"] #createOrgOverlay .modal h2,
+    html[data-ui-theme="dark"] #createOrgOverlay .modal label,
+    html[data-ui-theme="dark"] #createOrgOverlay .modal .config-hint {
+      color: #d7e1e1;
+    }
+    html[data-ui-theme="dark"] #createOrgOverlay .modal input,
+    html[data-ui-theme="dark"] #createOrgOverlay .modal textarea,
+    html[data-ui-theme="dark"] #createOrgOverlay .modal select {
+      background: #3f494b;
+      color: #eef4f4;
+      border: 1px solid #647174;
+    }
+    html[data-ui-theme="dark"] #createOrgOverlay .modal input::placeholder,
+    html[data-ui-theme="dark"] #createOrgOverlay .modal textarea::placeholder {
+      color: #b9c4c6;
+    }
+    html[data-ui-theme="dark"] #accountUpgradeBtn {
+      border-color: #ffffff !important;
+      color: #ffffff !important;
+      background: #343d3f !important;
+    }
+    html[data-ui-theme="dark"] #accountUpgradeBtn:hover {
+      background: #ffffff !important;
+      color: #111111 !important;
+      border-color: #ffffff !important;
+    }
+    html[data-ui-theme="dark"] .user-dock {
+      border-color: rgba(255, 255, 255, 0.28);
+      box-shadow: 0 10px 34px rgba(0, 0, 0, 0.38);
+    }
+    html[data-ui-theme="dark"] .user-dock::before {
+      background: rgba(52, 61, 63, 0.55);
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.14) inset;
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+    }
+    html[data-ui-theme="dark"] .settings-btn {
+      background: rgba(52, 61, 63, 0.92);
+      border-color: #d4dddd;
+      color: #eef4f4;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.35);
+    }
+    html[data-ui-theme="dark"] .settings-btn:hover {
+      background: rgba(73, 85, 87, 0.95);
+    }
+    html[data-ui-theme="dark"] .settings-btn svg {
+      opacity: 0.95;
+    }
 
     .modal textarea {
       width: 100%;
@@ -1888,6 +2027,42 @@
       width: 18px;
       height: 18px;
       stroke: currentColor;
+    }
+    /* 요청사항: 가입 버튼은 아이콘/테두리를 조금 더 연하게 */
+    #joinOrgBtn {
+      border-color: rgba(17, 17, 17, 0.45);
+      color: rgba(17, 17, 17, 0.62);
+    }
+    html[data-ui-theme="dark"] #joinOrgBtn {
+      border-color: rgba(241, 247, 247, 0.5);
+      color: rgba(241, 247, 247, 0.72);
+    }
+    /* 요청사항: 이름 편집 버튼은 기본 배경/테두리 제거, hover만 연한 배경 */
+    #profileNameEditBtn {
+      border: none !important;
+      background: transparent !important;
+    }
+    #profileNameEditBtn:hover {
+      background: rgba(0, 0, 0, 0.08) !important;
+    }
+    html[data-ui-theme="dark"] #profileNameEditBtn:hover {
+      background: rgba(255, 255, 255, 0.14) !important;
+    }
+    /* 요청사항: 로그아웃 버튼은 테마 무관 빨강 채움 + 흰 텍스트 */
+    #logoutBtn {
+      background: #e5484d !important;
+      color: #ffffff !important;
+      border: 1px solid #e5484d !important;
+      margin-top: 6px;
+    }
+    #logoutBtn:hover {
+      background: #d73b40 !important;
+      border-color: #d73b40 !important;
+      color: #ffffff !important;
+    }
+    /* 요청사항: 계정 업그레이드 버튼 테두리를 취소 버튼보다 살짝 더 두껍게 */
+    #accountUpgradeBtn {
+      border-width: 2px !important;
     }
     .privacy-toggle {
       display: flex;
