@@ -4065,6 +4065,10 @@
         section.style.display = 'none';
         return;
       }
+      if (isPersonalLeaderWorkspace()) {
+        section.style.display = 'none';
+        return;
+      }
       section.style.display = '';
       const bgUrlEl = document.getElementById('bgUrl');
       const bgGroup = bgUrlEl ? bgUrlEl.closest('.form-group') : null;
@@ -5019,6 +5023,7 @@
       refreshOrgSwitchSelect();
       await syncLeaderLocalCacheFromServer();
       await saveOrganizationRanking();
+      placeSettingsStartPageSection();
     }
 
     function refreshOrgSwitchSelect() {
@@ -5893,8 +5898,12 @@
         settingsOverlay.classList.add('open');
       }
     });
-    document.getElementById('settingsStartPageBtn')?.addEventListener('click', () => {
-      void setPersonalAsDefaultStartPage();
+    document.getElementById('settingsStartPageBtn')?.addEventListener('click', async () => {
+      try {
+        await setPersonalAsDefaultStartPage();
+      } finally {
+        placeSettingsStartPageSection();
+      }
     });
     settingsOverlay.addEventListener('click', (e) => {
       if (e.target === settingsOverlay) closeSettingsModal();
