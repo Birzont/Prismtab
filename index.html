@@ -9,6 +9,40 @@
   <title>Prismtab Starting Page</title>
   <link rel="icon" type="image/jpeg" href="/resources/prismtabfavicon.jpeg" id="appFavicon">
   <style>
+    :root {
+      --ui-surface: #ffffff;
+      --ui-surface-soft: #f2f4f6;
+      --ui-text: #191f28;
+      --ui-text-muted: #8b95a1;
+      --ui-border-strong: #111111;
+      --ui-border-soft: #e5e8eb;
+      --ui-btn-border-width: 1.5px;
+      --ui-btn-ghost-bg: #ffffff;
+      --ui-btn-ghost-fg: #111111;
+      --ui-btn-ghost-hover-bg: #111111;
+      --ui-btn-ghost-hover-fg: #ffffff;
+      --ui-btn-solid-bg: #000000;
+      --ui-btn-solid-fg: #ffffff;
+      --ui-btn-solid-hover-bg: #1f1f1f;
+    }
+    html[data-ui-theme="dark"] {
+      --ui-surface: #343d3f;
+      --ui-surface-soft: #3f494b;
+      --ui-text: #eef4f4;
+      --ui-text-muted: #d3dddd;
+      --ui-border-strong: #eef4f4;
+      --ui-border-soft: #566366;
+      --ui-btn-ghost-bg: #343d3f;
+      --ui-btn-ghost-fg: #eef4f4;
+      --ui-btn-ghost-hover-bg: #f3f5f7;
+      --ui-btn-ghost-hover-fg: #0f1115;
+      --ui-btn-solid-bg: #ffffff;
+      --ui-btn-solid-fg: #000000;
+      --ui-btn-solid-hover-bg: #e8ebef;
+    }
+    html[data-ui-theme="dark"] body {
+      background-color: #343d3f;
+    }
     * {
       margin: 0;
       padding: 0;
@@ -17,6 +51,7 @@
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: #e8e8e8 center/cover no-repeat;
+      color: var(--ui-text);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -38,7 +73,7 @@
       width: 100%;
     }
     .card {
-      background: white;
+      background: var(--ui-surface);
       border-radius: 24px;
       padding: 36px 32px;
       box-shadow: 0 4px 24px rgba(0,0,0,0.08);
@@ -146,19 +181,23 @@
     }
     .shortcut-label {
       font-size: 11px;
-      color: #555;
+      color: var(--ui-text-muted);
       text-align: center;
       max-width: 80px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
+    html[data-ui-theme="dark"] .shortcut-label {
+      color: #f1f7f7;
+    }
     .add-btn {
       width: 64px;
       height: 64px;
       border-radius: 16px;
-      background: #f5f5f5;
-      border: 2px dashed #bbb;
+      background: var(--ui-surface);
+      border: 2px dashed #111111;
+      color: #111111;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -167,17 +206,29 @@
       margin-bottom: 8px;
     }
     .add-btn:hover {
-      background: #eee;
-      border-color: #999;
+      background: var(--ui-surface-soft);
+      border-color: #111111;
     }
     .add-btn span {
       font-size: 28px;
-      color: #666;
+      color: inherit;
       line-height: 1;
     }
     .add-label {
       font-size: 11px;
-      color: #777;
+      color: #4e5968;
+    }
+    html[data-ui-theme="dark"] .add-btn {
+      background: var(--ui-surface);
+      border-color: #ffffff;
+      color: #ffffff;
+    }
+    html[data-ui-theme="dark"] .add-btn:hover {
+      background: var(--ui-surface-soft);
+      border-color: #ffffff;
+    }
+    html[data-ui-theme="dark"] .add-label {
+      color: #d3dddd;
     }
     .pagination {
       display: flex;
@@ -311,39 +362,76 @@
     .modal-actions button {
       flex: 1;
       padding: 12px;
-      border: none;
+      border: var(--ui-btn-border-width) solid var(--ui-border-strong);
       border-radius: 10px;
       font-size: 14px;
       font-weight: 500;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: background-color 0.22s ease, color 0.22s ease, border-color 0.22s ease;
     }
-    .btn-cancel {
-      background: #eee;
-      color: #555;
+    .btn-cancel,
+    .btn-mini,
+    .btn-profile-save,
+    .btn-profile-edit,
+    .settings-modal-back,
+    .btn-copy-export,
+    .pricing-manage-link,
+    .signup-switch-link,
+    .policy-link-inline,
+    .delete-btn,
+    .btn-logout-wide {
+      background: var(--ui-btn-ghost-bg);
+      color: var(--ui-btn-ghost-fg);
+      border: var(--ui-btn-border-width) solid var(--ui-border-strong);
     }
-    .btn-cancel:hover {
-      background: #e0e0e0;
+    .btn-cancel:hover,
+    .btn-mini:hover,
+    .btn-profile-save:hover,
+    .btn-profile-edit:hover,
+    .settings-modal-back:hover,
+    .btn-copy-export:hover,
+    .pricing-manage-link:hover,
+    .signup-switch-link:hover,
+    .policy-link-inline:hover,
+    .delete-btn:hover,
+    .btn-logout-wide:hover {
+      background: var(--ui-btn-ghost-hover-bg);
+      color: var(--ui-btn-ghost-hover-fg);
+      border-color: var(--ui-border-strong);
     }
-    .btn-save {
-      background: #4a90d9;
-      color: white;
+    .btn-save,
+    #settingsApplyBtn,
+    #firstVisitStartPageBtn,
+    #settingsStartPageBtn,
+    #createOrgBtn,
+    #userModalSaveBtn,
+    #inviteAcceptBtn,
+    #signupSubmitBtn,
+    .btn-account-upgrade,
+    .pricing-card-cta {
+      background: var(--ui-btn-solid-bg);
+      color: var(--ui-btn-solid-fg);
+      border: 1px solid var(--ui-btn-solid-bg);
     }
-    .btn-save:hover {
-      background: #3a7bc8;
+    .btn-save:hover,
+    #settingsApplyBtn:hover,
+    #firstVisitStartPageBtn:hover,
+    #settingsStartPageBtn:hover,
+    #createOrgBtn:hover,
+    #userModalSaveBtn:hover,
+    #inviteAcceptBtn:hover,
+    #signupSubmitBtn:hover,
+    .btn-account-upgrade:hover,
+    .pricing-card-cta:hover {
+      background: var(--ui-btn-solid-hover-bg);
+      border-color: var(--ui-btn-solid-hover-bg);
+      color: var(--ui-btn-solid-fg);
     }
     .delete-btn {
       padding: 6px 14px;
-      background: #ff4757;
-      color: white;
-      border: none;
       border-radius: 8px;
       font-size: 12px;
       cursor: pointer;
-      opacity: 0.9;
-    }
-    .delete-btn:hover {
-      opacity: 1;
     }
 
     /* 하단 유저 독 (맥북 스타일) */
@@ -631,8 +719,8 @@
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 12px 16px;
-      padding: 14px 18px;
+      gap: 8px 12px;
+      padding: 9px 14px;
       border-radius: 14px;
       background: rgba(255, 255, 255, 0.96);
       border: 1px solid rgba(0, 0, 0, 0.08);
@@ -640,10 +728,10 @@
     }
     .first-visit-startpage-banner-text {
       margin: 0;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 600;
-      color: #191f28;
-      line-height: 1.45;
+      color: var(--ui-text);
+      line-height: 1.3;
       flex: 1 1 220px;
     }
     .first-visit-startpage-banner-actions {
@@ -656,7 +744,7 @@
     .first-visit-startpage-banner-dismiss {
       border: none;
       background: transparent;
-      color: #8b95a1;
+      color: var(--ui-text-muted);
       cursor: pointer;
       padding: 6px;
       line-height: 0;
@@ -671,8 +759,30 @@
       height: 20px;
     }
     .first-visit-startpage-banner-dismiss:hover {
-      color: #4e5968;
+      color: var(--ui-text);
       background: rgba(0, 0, 0, 0.05);
+    }
+    html[data-ui-theme="dark"] .first-visit-startpage-banner-inner {
+      background: rgba(20, 24, 31, 0.96);
+      border-color: rgba(255, 255, 255, 0.14);
+    }
+    html[data-ui-theme="dark"] #settingsOverlay .modal,
+    html[data-ui-theme="dark"] #settingsOverlay .modal label,
+    html[data-ui-theme="dark"] #settingsOverlay .modal h2,
+    html[data-ui-theme="dark"] #settingsOverlay .modal h3 {
+      color: var(--ui-text);
+    }
+    html[data-ui-theme="dark"] #settingsOverlay .modal .config-hint,
+    html[data-ui-theme="dark"] #settingsOverlay .modal .dock-mode-label,
+    html[data-ui-theme="dark"] #settingsOverlay .modal .dock-mode-paren,
+    html[data-ui-theme="dark"] #settingsOverlay .modal .profile-email,
+    html[data-ui-theme="dark"] #settingsOverlay .modal .muted-text,
+    html[data-ui-theme="dark"] #settingsOverlay .modal .signup-switch-hint .signup-switch-link {
+      color: var(--ui-text-muted);
+    }
+    html[data-ui-theme="dark"] #settingsOverlay .modal input::placeholder,
+    html[data-ui-theme="dark"] #settingsOverlay .modal textarea::placeholder {
+      color: #9aa5b5;
     }
 
     .modal textarea {
@@ -694,9 +804,9 @@
       max-height: min(88vh, 820px);
       overflow-y: auto;
       overflow-x: hidden;
-      background: #ffffff;
-      color: #191f28;
-      border: 1px solid #e5e8eb;
+      background: var(--ui-surface);
+      color: var(--ui-text);
+      border: 1px solid var(--ui-border-soft);
       border-radius: 16px;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
       scrollbar-width: thin;
@@ -729,11 +839,11 @@
       margin-top: 4px;
     }
     .settings-section {
-      border: 1px solid #e5e8eb;
+      border: 1px solid var(--ui-border-soft);
       border-radius: 12px;
       padding: 12px;
       margin-bottom: 12px;
-      background: #ffffff;
+      background: var(--ui-surface);
     }
     #orgSettingsSection {
       border: none;
@@ -755,7 +865,7 @@
       line-height: 24px;
       font-weight: 600;
       margin-bottom: 8px;
-      color: #191f28;
+      color: var(--ui-text);
     }
     .org-workspace-grid {
       display: grid;
@@ -1157,7 +1267,7 @@
     .muted-text {
       font-size: 13px;
       line-height: 20px;
-      color: #8b95a1;
+      color: var(--ui-text-muted);
     }
     .error-text {
       margin-top: 8px;
@@ -1173,9 +1283,9 @@
     .btn-mini {
       padding: 6px 10px;
       border-radius: 8px;
-      border: 1px solid #e5e8eb;
-      background: #f2f4f6;
-      color: #191f28;
+      border: var(--ui-btn-border-width) solid var(--ui-border-strong);
+      background: var(--ui-btn-ghost-bg);
+      color: var(--ui-btn-ghost-fg);
       font-size: 13px;
       line-height: 20px;
       font-weight: 600;
@@ -1183,8 +1293,9 @@
       transition: background-color .22s ease, color .22s ease, border-color .22s ease;
     }
     .btn-mini:hover {
-      background: #e8f3ff;
-      border-color: #d1d6db;
+      background: var(--ui-btn-ghost-hover-bg);
+      color: var(--ui-btn-ghost-hover-fg);
+      border-color: var(--ui-border-strong);
     }
     .dock-mode-toggle-wrap {
       display: none;
@@ -1262,9 +1373,9 @@
       gap: 10px;
       align-items: stretch;
       padding: 10px;
-      border: 1px solid #ececec;
+      border: 1px solid var(--ui-border-soft);
       border-radius: 12px;
-      background: #fff;
+      background: var(--ui-surface);
       margin-bottom: 8px;
     }
     .profile-card.open {
@@ -1289,7 +1400,7 @@
     }
     .profile-email {
       font-size: 12px;
-      color: #8b95a1;
+      color: var(--ui-text-muted);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -1305,7 +1416,7 @@
       min-width: 0;
       font-size: 15px;
       font-weight: 600;
-      color: #191f28;
+      color: var(--ui-text);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -1317,7 +1428,7 @@
       border: none;
       border-radius: 8px;
       font-size: 13px;
-      background: #f2f4f6;
+      background: var(--ui-surface-soft);
     }
     .profile-name-input:disabled {
       background: #f5f5f5;
@@ -1327,10 +1438,10 @@
     .btn-profile-save {
       flex: 0 0 auto;
       padding: 7px 10px;
-      border: 1px solid #e5e8eb;
+      border: var(--ui-btn-border-width) solid var(--ui-border-strong);
       border-radius: 8px;
-      background: #f2f4f6;
-      color: #191f28;
+      background: var(--ui-btn-ghost-bg);
+      color: var(--ui-btn-ghost-fg);
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
@@ -1339,9 +1450,9 @@
       flex: 0 0 auto;
       width: 30px;
       height: 30px;
-      border: none;
+      border: var(--ui-btn-border-width) solid var(--ui-border-strong);
       border-radius: 8px;
-      background: #f2f4f6;
+      background: var(--ui-btn-ghost-bg);
       font-size: 12px;
       cursor: pointer;
       display: inline-flex;
@@ -1351,7 +1462,7 @@
     .btn-profile-edit svg {
       width: 14px;
       height: 14px;
-      stroke: #4e5968;
+      stroke: currentColor;
     }
     .profile-name-edit-row {
       display: none;
@@ -1376,20 +1487,20 @@
       padding: 7px 11px;
       border: none;
       border-radius: 8px;
-      background: #2563eb;
-      color: #fff;
+      background: var(--ui-btn-solid-bg);
+      color: var(--ui-btn-solid-fg);
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
     }
     .fancy-file-input:hover::file-selector-button {
-      background: #2272eb;
+      background: var(--ui-btn-solid-hover-bg);
     }
     .btn-logout-wide {
       width: 100%;
-      border: none;
-      background: #f04452;
-      color: #fff;
+      border: var(--ui-btn-border-width) solid var(--ui-border-strong);
+      background: var(--ui-btn-ghost-bg);
+      color: var(--ui-btn-ghost-fg);
       border-radius: 10px;
       min-height: 41px;
       padding: 10px 14px;
@@ -1401,7 +1512,8 @@
       cursor: pointer;
     }
     .btn-logout-wide:hover {
-      background: #d93a47;
+      background: var(--ui-btn-ghost-hover-bg);
+      color: var(--ui-btn-ghost-hover-fg);
     }
     #oauthAuthRow {
       width: 100%;
@@ -1652,8 +1764,8 @@
     #settingsOverlay .modal select {
       border: none;
       box-shadow: none;
-      background: #f2f4f6;
-      color: #191f28;
+      background: var(--ui-surface-soft);
+      color: var(--ui-text);
       border-radius: 8px;
       font-size: 14px;
       line-height: 22px;
@@ -1665,43 +1777,20 @@
     }
     #settingsOverlay .modal input::placeholder,
     #settingsOverlay .modal textarea::placeholder {
-      color: #b0b8c1;
+      color: var(--ui-text-muted);
     }
     #bgUrl,
     #logoUrl {
-      background: #f2f4f6 !important;
-    }
-    #settingsApplyBtn {
-      background: #2563eb;
-      color: #ffffff;
-      border: none;
-    }
-    #settingsApplyBtn:hover {
-      background: #2272eb;
+      background: var(--ui-surface-soft) !important;
     }
     #firstVisitStartPageBtn,
     #settingsStartPageBtn {
-      background: #2563eb;
-      color: #ffffff;
-      border: none;
       border-radius: 10px;
       padding: 10px 16px;
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
       transition: background 0.2s;
-    }
-    #firstVisitStartPageBtn:hover,
-    #settingsStartPageBtn:hover {
-      background: #2272eb;
-    }
-    #modalOverlay .btn-save {
-      background: #2563eb;
-      color: #ffffff;
-      border: none;
-    }
-    #modalOverlay .btn-save:hover {
-      background: #2272eb;
     }
     /* settings modal 내부 간격 미세 조정 */
     #settingsOverlay .modal .modal-actions {
@@ -1724,22 +1813,6 @@
       margin-top: 18px;
     }
     /* 조직 생성 모달 생성 버튼 */
-    #createOrgBtn {
-      background: #2563eb !important;
-      color: #ffffff !important;
-      border: none !important;
-    }
-    #createOrgBtn:hover {
-      background: #2272eb !important;
-    }
-    #userModalSaveBtn {
-      background: #2563eb !important;
-      color: #ffffff !important;
-      border: none !important;
-    }
-    #userModalSaveBtn:hover {
-      background: #2272eb !important;
-    }
     .settings-row-split {
       display: flex;
       gap: 8px;
@@ -1748,15 +1821,15 @@
     .settings-row-split > button {
       flex: 1 1 0;
       min-height: 41px;
-      border: none;
+      border: var(--ui-btn-border-width) solid var(--ui-border-strong);
       border-radius: 10px;
       transition: background-color .22s ease, color .22s ease;
     }
     .settings-row-split > button:hover,
     #joinOrgBtn:hover,
     #copyExportBtn:hover {
-      background: #2563eb !important;
-      color: #ffffff !important;
+      background: var(--ui-btn-ghost-hover-bg) !important;
+      color: var(--ui-btn-ghost-hover-fg) !important;
     }
     #joinOrgBtn {
       min-height: 46px;
@@ -1766,8 +1839,8 @@
       align-items: center;
       justify-content: center;
       border-radius: 10px;
-      border: none;
-      background: #f2f4f6;
+      border: var(--ui-btn-border-width) solid var(--ui-border-strong);
+      background: var(--ui-btn-ghost-bg);
     }
     #joinOrgBtn svg {
       width: 18px;
@@ -1842,15 +1915,16 @@
     .btn-copy-export {
       padding: 6px 12px;
       font-size: 12px;
-      background: #f0f0f0;
-      border: 1px solid #ddd;
+      background: var(--ui-btn-ghost-bg);
+      border: var(--ui-btn-border-width) solid var(--ui-border-strong);
       border-radius: 8px;
       cursor: pointer;
-      color: #555;
+      color: var(--ui-btn-ghost-fg);
       transition: background-color .22s ease, color .22s ease, border-color .22s ease;
     }
     .btn-copy-export:hover {
-      background: #e5e5e5;
+      background: var(--ui-btn-ghost-hover-bg);
+      color: var(--ui-btn-ghost-hover-fg);
     }
 
     /* Polar 요금제 패널 (설정 모달 폭의 약 3배) */
@@ -2057,11 +2131,11 @@
   </style>
 </head>
 <body>
-  <div id="firstVisitStartPageBanner" class="first-visit-startpage-banner" role="region" aria-label="시작 페이지 안내">
+  <div id="firstVisitStartPageBanner" class="first-visit-startpage-banner" role="region" aria-label="시작 및 홈페이지 안내">
     <div class="first-visit-startpage-banner-inner">
-      <p class="first-visit-startpage-banner-text">시작페이지로 설정하고 더 빠르게 움직이세요</p>
+      <p class="first-visit-startpage-banner-text">시작 및 홈페이지로 설정하고 더 빠르게 움직이세요</p>
       <div class="first-visit-startpage-banner-actions">
-        <button type="button" id="firstVisitStartPageBtn">시작 페이지 설정</button>
+        <button type="button" id="firstVisitStartPageBtn">시작 및 홈페이지로 설정</button>
         <button type="button" id="firstVisitStartPageDismiss" class="first-visit-startpage-banner-dismiss" aria-label="닫기">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
@@ -2195,9 +2269,9 @@
         <div class="config-hint">기본 메일 앱으로 초대 링크가 담긴 메일 작성 화면이 열립니다.</div>
       </div>
       <div class="settings-section sm-stack sm-order-startpage" id="settingsStartPageSection" style="display: none;">
-        <h3>시작페이지로 설정하기</h3>
+        <h3>시작 및 홈페이지로 설정하기</h3>
         <p class="muted-text" style="margin: 0 0 12px;">개인 스페이스를 새 탭에서 가장 먼저 열리도록 지정합니다.</p>
-        <button type="button" id="settingsStartPageBtn">시작 페이지로 설정</button>
+        <button type="button" id="settingsStartPageBtn">시작 및 홈페이지로 설정</button>
       </div>
       <div class="settings-section sm-stack sm-order-account" id="accountSettingsSection">
         <h3>계정 / 인증</h3>
@@ -2219,6 +2293,14 @@
             </div>
           </div>
           <button type="button" class="btn-account-upgrade" id="accountUpgradeBtn">계정 업그레이드</button>
+          <div class="form-group" id="themePreferenceGroup" style="display:none;">
+            <label for="themePreferenceSelect">테마</label>
+            <select id="themePreferenceSelect">
+              <option value="system">시스템</option>
+              <option value="dark">다크</option>
+              <option value="light">화이트</option>
+            </select>
+          </div>
           <div class="dock-mode-toggle-wrap" id="dockModeToggleWrap" style="display:none;" aria-label="Dock 표시 모드">
             <span class="dock-mode-label dock-mode-label--members" id="dockModeLabelMembers">Dock에 팀 멤버 표시 <span class="dock-mode-paren">(off)</span></span>
             <label class="dock-mode-switch">
@@ -3014,6 +3096,10 @@
       return !!(workspaceOrder && workspaceOrder.length && workspaceOrder[0] === 'personal');
     }
 
+    function isPersonalStartAndHomeWorkspace() {
+      return !!(workspaceOrder && workspaceOrder.length && workspaceOrder[0] === 'personal');
+    }
+
     async function setPersonalAsDefaultStartPage() {
       const key = 'personal';
       const arr = [...(workspaceOrder || [])];
@@ -3029,7 +3115,7 @@
       await saveOrganizationRanking();
       await switchScopeToPersonal();
       refreshOrgSwitchSelect();
-      notify('시작 페이지로 설정했습니다.');
+      notify('시작 및 홈페이지로 설정했습니다.');
     }
 
     function resetOrgCardDropdownPosition(dropdown) {
@@ -3092,7 +3178,7 @@
       await saveOrganizationRanking();
       await switchScopeToOrg(org.id);
       refreshOrgSwitchSelect();
-      notify('시작 페이지로 설정했습니다.');
+      notify('시작 및 홈페이지로 설정했습니다.');
     }
 
     function getMetaEnvValue(metaName) {
@@ -3230,10 +3316,19 @@
     }
 
     const PRISMTAB_STARTPAGE_INTRO_DONE_KEY = 'prismtab_startpage_intro_done';
+    const PRISMTAB_STARTPAGE_INTRO_LAST_SHOWN_AT_KEY = 'prismtab_startpage_intro_last_shown_at';
+    const PRISMTAB_STARTPAGE_RESHOW_INTERVAL_MS = 14 * 24 * 60 * 60 * 1000;
 
     function markPrismtabStartpageIntroDone() {
       try {
         localStorage.setItem(PRISMTAB_STARTPAGE_INTRO_DONE_KEY, '1');
+      } catch (e) { /* ignore */ }
+    }
+
+    function markPrismtabStartpageIntroShownNow() {
+      try {
+        localStorage.setItem(PRISMTAB_STARTPAGE_INTRO_DONE_KEY, '1');
+        localStorage.setItem(PRISMTAB_STARTPAGE_INTRO_LAST_SHOWN_AT_KEY, String(Date.now()));
       } catch (e) { /* ignore */ }
     }
 
@@ -3266,7 +3361,12 @@
     function shouldShowPrismtabStartpageIntro() {
       try {
         migratePrismtabStartpageIntroForReturningUsers();
-        return !localStorage.getItem(PRISMTAB_STARTPAGE_INTRO_DONE_KEY);
+        if (isPersonalStartAndHomeWorkspace()) return false;
+        const done = Boolean(localStorage.getItem(PRISMTAB_STARTPAGE_INTRO_DONE_KEY));
+        if (!done) return true;
+        const lastShownAt = Number(localStorage.getItem(PRISMTAB_STARTPAGE_INTRO_LAST_SHOWN_AT_KEY) || '0');
+        if (!Number.isFinite(lastShownAt) || lastShownAt <= 0) return true;
+        return (Date.now() - lastShownAt) >= PRISMTAB_STARTPAGE_RESHOW_INTERVAL_MS;
       } catch (e) {
         return false;
       }
@@ -3278,9 +3378,9 @@
       const dismiss = document.getElementById('firstVisitStartPageDismiss');
       if (!banner || !btn || !dismiss) return;
       if (!shouldShowPrismtabStartpageIntro()) return;
+      markPrismtabStartpageIntroShownNow();
       banner.classList.add('is-visible');
       const closeBanner = () => {
-        markPrismtabStartpageIntroDone();
         banner.classList.remove('is-visible');
       };
       btn.addEventListener('click', async () => {
@@ -3308,10 +3408,54 @@
       return false;
     }
 
+    function getSystemThemeMode() {
+      try {
+        return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      } catch (e) {
+        return 'light';
+      }
+    }
+
+    function normalizeThemePreference(v) {
+      if (v === 'dark' || v === 'light') return v;
+      return 'system';
+    }
+
+    function applyUiTheme(themePref) {
+      const pref = normalizeThemePreference(themePref);
+      const resolved = pref === 'system' ? getSystemThemeMode() : pref;
+      document.documentElement.setAttribute('data-ui-theme', resolved);
+    }
+
+    async function saveThemePreferenceForCurrentUser(nextPref) {
+      if (!isLoggedIn() || !supabaseClient) return;
+      const pref = normalizeThemePreference(nextPref);
+      const dbTheme = pref === 'system' ? null : pref;
+      const { error } = await withLockRetry(async () =>
+        supabaseClient
+          .from('users')
+          .update({ theme: dbTheme })
+          .eq('id', currentUser.id)
+      );
+      if (error && !isLockError(error)) {
+        notify('테마 저장 실패: ' + (error.message || 'unknown'));
+        return;
+      }
+      currentUserProfile.theme = dbTheme;
+      if (currentUser && currentUser.id) {
+        userProfileCache[currentUser.id] = {
+          username: currentUserProfile.username || '',
+          avatar_url: currentUserProfile.avatar_url || '',
+          theme: currentUserProfile.theme || null
+        };
+      }
+      applyUiTheme(pref);
+    }
+
     const DEFAULT_SHORTCUT_DOC = {
       background: {
         url: 'https://birzont.github.io/Brand/resources/cloudy.png',
-        logo: 'https://birzont.github.io/Brand/resources/prismtablogo.png'
+        logo: 'https://birzont.github.io/Brand/resources/prismtabfrombirzont.png'
       },
       items: [
         { name: 'Google', url: 'https://www.google.com', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Google_Favicon_2025.svg/960px-Google_Favicon_2025.svg.png', color: '#ffffff' },
@@ -3323,7 +3467,7 @@
     let dockUsers = [];
     let userProfileCache = {};
     let wasDockVisible = false;
-    let currentUserProfile = { username: '', avatar_url: '' };
+    let currentUserProfile = { username: '', avatar_url: '', theme: null };
     let isProfileNameEditing = false;
     let currentPage = 0;
     let bgUrl = '';
@@ -4049,10 +4193,8 @@
           modal.appendChild(accountSection);
         }
       } else {
-        const title = modal.querySelector('h2');
-        if (title && title.nextSibling !== accountSection) {
-          modal.insertBefore(accountSection, title.nextSibling);
-        }
+        // 비로그인 시 계정/인증 블록은 하단 액션 영역 아래로 이동
+        modal.appendChild(accountSection);
       }
       placeSettingsStartPageSection();
     }
@@ -4065,7 +4207,7 @@
         section.style.display = 'none';
         return;
       }
-      if (isPersonalLeaderWorkspace()) {
+      if (isPersonalStartAndHomeWorkspace()) {
         section.style.display = 'none';
         return;
       }
@@ -4077,6 +4219,9 @@
         if (accountSection && accountSection.parentNode === modal) {
           modal.insertBefore(section, accountSection);
         }
+      } else if (accountSection && accountSection.parentNode === modal) {
+        // 비로그인: 취소/적용 아래, 계정/인증 위에 배치
+        modal.insertBefore(section, accountSection);
       } else if (bgGroup && bgGroup.parentNode === modal) {
         modal.insertBefore(section, bgGroup);
       }
@@ -4090,9 +4235,11 @@
       const nameText = document.getElementById('profileNameText');
       const editRow = document.getElementById('profileNameEditRow');
       if (!card || !avatar || !emailText || !nameInput || !nameText || !editRow) return;
+      const themeSelect = document.getElementById('themePreferenceSelect');
       if (!isLoggedIn()) {
         card.classList.remove('open');
         isProfileNameEditing = false;
+        if (themeSelect) themeSelect.value = 'system';
         return;
       }
       const profileName = currentUserProfile.username || currentUser.user_metadata?.name || '';
@@ -4109,11 +4256,13 @@
       if (editBtn) editBtn.style.display = isProfileNameEditing ? 'none' : 'inline-flex';
       if (saveBtn) saveBtn.style.display = isProfileNameEditing ? 'inline-flex' : 'none';
       emailText.textContent = currentUser.email || currentUser.id || '';
+      if (themeSelect) themeSelect.value = normalizeThemePreference(currentUserProfile.theme);
     }
 
     async function loadCurrentUserProfile() {
       if (!supabaseClient || !isLoggedIn()) {
-        currentUserProfile = { username: '', avatar_url: '' };
+        currentUserProfile = { username: '', avatar_url: '', theme: null };
+        applyUiTheme('system');
         refreshAppBranding();
         return;
       }
@@ -4121,30 +4270,35 @@
       if (cached) {
         currentUserProfile = {
           username: cached.username || '',
-          avatar_url: cached.avatar_url || ''
+          avatar_url: cached.avatar_url || '',
+          theme: (cached.theme === 'dark' || cached.theme === 'light') ? cached.theme : null
         };
+        applyUiTheme(normalizeThemePreference(currentUserProfile.theme));
         refreshAppBranding();
         return;
       }
       const { data, error } = await withLockRetry(async () =>
         supabaseClient
           .from('users')
-          .select('username, avatar_url')
+          .select('username, avatar_url, theme')
           .eq('id', currentUser.id)
           .limit(1)
       );
       if (error) {
         if (!isLockError(error)) console.warn('[profile/load-current-user]', error);
-        currentUserProfile = { username: '', avatar_url: '' };
+        currentUserProfile = { username: '', avatar_url: '', theme: null };
+        applyUiTheme('system');
         refreshAppBranding();
         return;
       }
       const row = (data && data[0]) ? data[0] : {};
       currentUserProfile = {
         username: row.username || '',
-        avatar_url: row.avatar_url || ''
+        avatar_url: row.avatar_url || '',
+        theme: (row.theme === 'dark' || row.theme === 'light') ? row.theme : null
       };
       userProfileCache[currentUser.id] = { ...currentUserProfile };
+      applyUiTheme(normalizeThemePreference(currentUserProfile.theme));
       refreshAppBranding();
     }
 
@@ -4659,6 +4813,7 @@
       const emailGroup = document.getElementById('emailAuthGroup');
       const passwordGroup = document.getElementById('passwordAuthGroup');
       const oauthRow = document.getElementById('oauthAuthRow');
+      const themeGroup = document.getElementById('themePreferenceGroup');
       const loggedIn = isLoggedIn();
       reorderAccountSectionByAuth();
       if (orgSection) orgSection.style.display = loggedIn ? '' : 'none';
@@ -4678,6 +4833,7 @@
         if (dockAddBoot) dockAddBoot.style.display = 'none';
         const upBoot = document.getElementById('accountUpgradeBtn');
         if (upBoot) upBoot.style.display = 'none';
+        if (themeGroup) themeGroup.style.display = 'none';
         renderSettingsProfileCard();
         return;
       }
@@ -4695,6 +4851,8 @@
         if (dockAddGuest) dockAddGuest.style.display = 'none';
         const upGuest = document.getElementById('accountUpgradeBtn');
         if (upGuest) upGuest.style.display = 'none';
+        if (themeGroup) themeGroup.style.display = 'none';
+        applyUiTheme('system');
       } else {
         emailGroup.style.display = 'none';
         passwordGroup.style.display = 'none';
@@ -4703,6 +4861,7 @@
         logoutBtn.style.display = 'inline-flex';
         emailLoginBtn.style.display = 'none';
         if (signupHint) signupHint.style.display = 'none';
+        if (themeGroup) themeGroup.style.display = 'block';
       }
       const dockModeWrap = document.getElementById('dockModeToggleWrap');
       if (dockModeWrap) {
@@ -5142,7 +5301,7 @@
           const btnStart = document.createElement('button');
           btnStart.type = 'button';
           btnStart.className = 'org-card-dropdown-item';
-          btnStart.innerHTML = starSvg + '<span>시작페이지</span>';
+          btnStart.innerHTML = starSvg + '<span>시작/홈페이지</span>';
           const btnSpace = document.createElement('button');
           btnSpace.type = 'button';
           btnSpace.className = 'org-card-dropdown-item';
@@ -5262,7 +5421,7 @@
           const btnStart = document.createElement('button');
           btnStart.type = 'button';
           btnStart.className = 'org-card-dropdown-item';
-          btnStart.innerHTML = starSvg + '<span>시작페이지</span>';
+          btnStart.innerHTML = starSvg + '<span>시작/홈페이지</span>';
           const btnSpace = document.createElement('button');
           btnSpace.type = 'button';
           btnSpace.className = 'org-card-dropdown-item';
@@ -5802,7 +5961,8 @@
           currentUserProfile.avatar_url = nextAvatar || '';
           userProfileCache[currentUser.id] = {
             username: currentUserProfile.username || '',
-            avatar_url: currentUserProfile.avatar_url || ''
+            avatar_url: currentUserProfile.avatar_url || '',
+            theme: currentUserProfile.theme || null
           };
           saveTheme();
           saveShortcuts();
@@ -5905,6 +6065,23 @@
         placeSettingsStartPageSection();
       }
     });
+    document.getElementById('themePreferenceSelect')?.addEventListener('change', async (e) => {
+      const nextPref = normalizeThemePreference(e && e.target ? e.target.value : 'system');
+      if (!isLoggedIn()) {
+        applyUiTheme('system');
+        return;
+      }
+      await saveThemePreferenceForCurrentUser(nextPref);
+      renderSettingsProfileCard();
+    });
+    try {
+      const mq = window.matchMedia('(prefers-color-scheme: dark)');
+      mq.addEventListener('change', () => {
+        if (!isLoggedIn() || normalizeThemePreference(currentUserProfile.theme) === 'system') {
+          applyUiTheme('system');
+        }
+      });
+    } catch (e) { /* ignore */ }
     settingsOverlay.addEventListener('click', (e) => {
       if (e.target === settingsOverlay) closeSettingsModal();
     });
@@ -5994,7 +6171,8 @@
       currentUserProfile.username = nextName;
       userProfileCache[currentUser.id] = {
         username: currentUserProfile.username || '',
-        avatar_url: currentUserProfile.avatar_url || ''
+        avatar_url: currentUserProfile.avatar_url || '',
+        theme: currentUserProfile.theme || null
       };
       isProfileNameEditing = false;
       renderSettingsProfileCard();
@@ -6141,41 +6319,20 @@
       return u.toString();
     }
 
-    function parseInviteCode(raw) {
-      const text = String(raw || '').trim();
-      if (!text) return '';
-      try {
-        if (/^https?:\/\//i.test(text)) {
-          const url = new URL(text);
-          const invite = (url.searchParams.get('invite') || '').trim();
-          return invite.toUpperCase();
-        }
-      } catch (e) { /* ignore and fallback */ }
-      return text.toUpperCase();
-    }
-
     async function openInviteAcceptByCode(code) {
-      const normalized = parseInviteCode(code);
-      if (!normalized || !supabaseClient || !isLoggedIn()) return;
+      if (!code || !supabaseClient || !isLoggedIn()) return;
       const { data, error } = await supabaseClient
         .from('shortcut_organizations')
         .select('*')
-        .eq('invite_code', normalized)
+        .eq('invite_code', code)
         .limit(1);
-      if (error) {
-        notify('가입 코드 조회 중 오류가 발생했습니다: ' + (error.message || 'unknown'));
-        return;
-      }
-      if (!data || !data[0]) {
-        notify('유효한 조직 가입 코드를 찾지 못했습니다.');
-        return;
-      }
+      if (error || !data || !data[0]) return;
       const org = data[0];
       if (!org.invite_expires_at || new Date(org.invite_expires_at).getTime() < Date.now()) {
         notify('초대 코드가 만료되었습니다.');
         return;
       }
-      pendingInviteCode = normalized;
+      pendingInviteCode = code;
       document.getElementById('inviteAcceptText').textContent = `${org.name}에 가입할까요?`;
       const logo = document.getElementById('inviteOrgLogo');
       if (org.logo_url) {
@@ -6199,22 +6356,12 @@
         return;
       }
       const org = data[0];
-      if (!org.invite_expires_at || new Date(org.invite_expires_at).getTime() < Date.now()) {
-        notify('초대 코드가 만료되었습니다.');
-        pendingInviteCode = null;
-        document.getElementById('inviteAcceptOverlay').classList.remove('open');
-        return;
-      }
       const memberIds = getOrgMemberIds(org);
       if (!memberIds.includes(currentUser.id)) memberIds.push(currentUser.id);
-      const { error: joinErr } = await supabaseClient
+      await supabaseClient
         .from('shortcut_organizations')
         .update({ member_user_ids: memberIds })
         .eq('id', org.id);
-      if (joinErr) {
-        notify('조직 가입 처리 중 오류가 발생했습니다: ' + (joinErr.message || 'unknown'));
-        return;
-      }
       pendingInviteCode = null;
       document.getElementById('inviteAcceptOverlay').classList.remove('open');
       await loadOrganizations();
@@ -6776,11 +6923,9 @@
       });
 
       document.getElementById('joinOrgBtn').addEventListener('click', async () => {
-        const raw = document.getElementById('joinCodeInput').value.trim();
-        const code = parseInviteCode(raw);
+        const code = document.getElementById('joinCodeInput').value.trim();
         if (!code) return notify('가입 코드를 입력하세요.');
         if (!isLoggedIn()) return notify('로그인이 필요합니다.');
-        document.getElementById('joinCodeInput').value = code;
         await openInviteAcceptByCode(code);
       });
 
@@ -6885,6 +7030,7 @@
     });
 
     async function initApp() {
+      applyUiTheme('system');
       loadShortcuts();
       loadDockUsers();
       await initSupabaseIfPossible();
