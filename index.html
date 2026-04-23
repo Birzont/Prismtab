@@ -1128,7 +1128,8 @@
     #settingsOverlay .modal.settings-view-space-settings .sm-order-privacy,
     #settingsOverlay .modal.settings-view-space-settings .sm-order-bulk,
     #settingsOverlay .modal.settings-view-space-settings .sm-order-invite-email,
-    #settingsOverlay .modal.settings-view-space-settings #settingsStartPageSection {
+    #settingsOverlay .modal.settings-view-space-settings #settingsStartPageSection,
+    #settingsOverlay .modal.settings-view-space-settings #settingsBrandFooter {
       display: none !important;
     }
     #settingsOverlay .modal.settings-view-space-settings .settings-modal-back {
@@ -1178,7 +1179,8 @@
     #settingsOverlay .modal.settings-view-space-invite .sm-order-logo,
     #settingsOverlay .modal.settings-view-space-invite .sm-order-nameedit,
     #settingsOverlay .modal.settings-view-space-invite .sm-order-actions,
-    #settingsOverlay .modal.settings-view-space-invite #settingsStartPageSection {
+    #settingsOverlay .modal.settings-view-space-invite #settingsStartPageSection,
+    #settingsOverlay .modal.settings-view-space-invite #settingsBrandFooter {
       display: none !important;
     }
     #settingsOverlay .modal.settings-view-space-invite .settings-modal-back {
@@ -1812,6 +1814,56 @@
     #accountSettingsSection {
       margin-top: 18px;
     }
+    .settings-brand-footer {
+      margin-top: 14px;
+      padding: 10px 6px 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 11px;
+      text-align: center;
+    }
+    .settings-brand-logo {
+      width: min(222px, 64%);
+      height: auto;
+      object-fit: contain;
+      user-select: none;
+      pointer-events: none;
+    }
+    .settings-brand-logo--dark {
+      display: none;
+    }
+    html[data-ui-theme="dark"] .settings-brand-logo--light {
+      display: none;
+    }
+    html[data-ui-theme="dark"] .settings-brand-logo--dark {
+      display: block;
+    }
+    .settings-brand-links {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 2px;
+      font-size: 12px;
+      color: var(--ui-text-muted);
+      line-height: 1.4;
+    }
+    .settings-brand-link {
+      color: var(--ui-text-muted);
+      text-decoration: none;
+      background: transparent;
+      border: none;
+      padding: 0;
+      font-size: 12px;
+      cursor: pointer;
+      transition: color .18s ease;
+    }
+    .settings-brand-link:hover {
+      color: var(--ui-text);
+      text-decoration: underline;
+    }
     /* 조직 생성 모달 생성 버튼 */
     .settings-row-split {
       display: flex;
@@ -2399,6 +2451,17 @@
           </form>
         </div>
       </div>
+      <div class="settings-brand-footer sm-stack" id="settingsBrandFooter">
+        <img class="settings-brand-logo settings-brand-logo--light" src="https://birzont.github.io/Brand/resources/prismtabfrombirzontblack.png" alt="Prismtab by Birzont">
+        <img class="settings-brand-logo settings-brand-logo--dark" src="https://birzont.github.io/Brand/resources/prismtabfrombirzontwhite.png" alt="Prismtab by Birzont">
+        <div class="settings-brand-links">
+          <button type="button" class="settings-brand-link" id="settingsFooterTermsBtn">이용약관</button>
+          <span aria-hidden="true">·</span>
+          <button type="button" class="settings-brand-link" id="settingsFooterPrivacyBtn">개인정보처리방침</button>
+          <span aria-hidden="true">·</span>
+          <a class="settings-brand-link" href="https://www.birzont.com" target="_blank" rel="noopener noreferrer">Birzont Inc.</a>
+        </div>
+      </div>
 
       <div class="settings-section sm-stack sm-order-org" id="orgSettingsSection">
         <h3>조직</h3>
@@ -2528,9 +2591,8 @@
         <h2 id="privacyPolicyTitle">개인정보 처리방침</h2>
         <button type="button" class="settings-modal-back" id="privacyPolicyCloseBtn" aria-label="닫기">
           <span class="settings-back-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
           </span>
-          <span>닫기</span>
         </button>
       </div>
       <div class="policy-md-scroll">
@@ -4180,10 +4242,17 @@
       if (settingsModalMode === 'signup') {
         const startEarly = document.getElementById('settingsStartPageSection');
         if (startEarly) startEarly.style.display = 'none';
+        const footerEarly = document.getElementById('settingsBrandFooter');
+        const accountEarly = document.getElementById('accountSettingsSection');
+        const modalEarly = document.querySelector('#settingsOverlay .modal');
+        if (footerEarly && accountEarly && modalEarly && accountEarly.parentNode === modalEarly) {
+          modalEarly.insertBefore(footerEarly, accountEarly.nextSibling);
+        }
         return;
       }
       const modal = document.querySelector('#settingsOverlay .modal');
       const accountSection = document.getElementById('accountSettingsSection');
+      const brandFooter = document.getElementById('settingsBrandFooter');
       if (!modal || !accountSection) return;
       if (isLoggedIn()) {
         const actions = modal.querySelector('.modal-actions');
@@ -4195,6 +4264,9 @@
       } else {
         // 비로그인 시 계정/인증 블록은 하단 액션 영역 아래로 이동
         modal.appendChild(accountSection);
+      }
+      if (brandFooter && accountSection.parentNode === modal) {
+        modal.insertBefore(brandFooter, accountSection.nextSibling);
       }
       placeSettingsStartPageSection();
     }
@@ -4744,6 +4816,7 @@
     }
 
     const PRIVACY_POLICY_MD_URL = 'https://birzont.com/policy/policy.md';
+    const TERMS_POLICY_MD_URL = 'https://birzont.com/policy/terms.md';
 
     function ensureMarkedLoaded() {
       if (window.marked && typeof window.marked.parse === 'function') return Promise.resolve();
@@ -4763,11 +4836,13 @@
       overlay.classList.remove('open');
     }
 
-    async function openPrivacyPolicyModal() {
+    async function openPolicyMdModal(title, mdUrl) {
       const overlay = document.getElementById('privacyPolicyOverlay');
       const loading = document.getElementById('privacyPolicyLoading');
       const content = document.getElementById('privacyPolicyContent');
+      const titleEl = document.getElementById('privacyPolicyTitle');
       if (!overlay) return;
+      if (titleEl) titleEl.textContent = title || '정책 문서';
       overlay.classList.add('open');
       if (loading) {
         loading.style.display = 'block';
@@ -4778,7 +4853,7 @@
         content.innerHTML = '';
       }
       try {
-        const res = await fetch(PRIVACY_POLICY_MD_URL, { cache: 'no-store' });
+        const res = await fetch(mdUrl, { cache: 'no-store' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const md = await res.text();
         await ensureMarkedLoaded();
@@ -4796,6 +4871,14 @@
         }
         console.warn('[privacy-policy/fetch]', e);
       }
+    }
+
+    async function openPrivacyPolicyModal() {
+      await openPolicyMdModal('개인정보 처리방침', PRIVACY_POLICY_MD_URL);
+    }
+
+    async function openTermsPolicyModal() {
+      await openPolicyMdModal('이용약관', TERMS_POLICY_MD_URL);
     }
 
     function updatePermissionHints() {
@@ -6658,6 +6741,22 @@
           ev.preventDefault();
           ev.stopPropagation();
           void openPrivacyPolicyModal();
+        });
+      }
+      const footerPrivacyBtn = document.getElementById('settingsFooterPrivacyBtn');
+      if (footerPrivacyBtn) {
+        footerPrivacyBtn.addEventListener('click', (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          void openPrivacyPolicyModal();
+        });
+      }
+      const footerTermsBtn = document.getElementById('settingsFooterTermsBtn');
+      if (footerTermsBtn) {
+        footerTermsBtn.addEventListener('click', (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          void openTermsPolicyModal();
         });
       }
       const privacyOverlayEl = document.getElementById('privacyPolicyOverlay');

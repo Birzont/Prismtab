@@ -1118,7 +1118,8 @@
     #settingsOverlay .modal.settings-view-space-settings .sm-order-privacy,
     #settingsOverlay .modal.settings-view-space-settings .sm-order-bulk,
     #settingsOverlay .modal.settings-view-space-settings .sm-order-invite-email,
-    #settingsOverlay .modal.settings-view-space-settings #settingsStartPageSection {
+    #settingsOverlay .modal.settings-view-space-settings #settingsStartPageSection,
+    #settingsOverlay .modal.settings-view-space-settings #settingsBrandFooter {
       display: none !important;
     }
     #settingsOverlay .modal.settings-view-space-settings .settings-modal-back {
@@ -1168,7 +1169,8 @@
     #settingsOverlay .modal.settings-view-space-invite .sm-order-logo,
     #settingsOverlay .modal.settings-view-space-invite .sm-order-nameedit,
     #settingsOverlay .modal.settings-view-space-invite .sm-order-actions,
-    #settingsOverlay .modal.settings-view-space-invite #settingsStartPageSection {
+    #settingsOverlay .modal.settings-view-space-invite #settingsStartPageSection,
+    #settingsOverlay .modal.settings-view-space-invite #settingsBrandFooter {
       display: none !important;
     }
     #settingsOverlay .modal.settings-view-space-invite .settings-modal-back {
@@ -1801,6 +1803,56 @@
     /* accountSettingsSection과 하단 버튼 사이 간격 */
     #accountSettingsSection {
       margin-top: 18px;
+    }
+    .settings-brand-footer {
+      margin-top: 14px;
+      padding: 10px 6px 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 11px;
+      text-align: center;
+    }
+    .settings-brand-logo {
+      width: min(222px, 64%);
+      height: auto;
+      object-fit: contain;
+      user-select: none;
+      pointer-events: none;
+    }
+    .settings-brand-logo--dark {
+      display: none;
+    }
+    html[data-ui-theme="dark"] .settings-brand-logo--light {
+      display: none;
+    }
+    html[data-ui-theme="dark"] .settings-brand-logo--dark {
+      display: block;
+    }
+    .settings-brand-links {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 2px;
+      font-size: 12px;
+      color: var(--ui-text-muted);
+      line-height: 1.4;
+    }
+    .settings-brand-link {
+      color: var(--ui-text-muted);
+      text-decoration: none;
+      background: transparent;
+      border: none;
+      padding: 0;
+      font-size: 12px;
+      cursor: pointer;
+      transition: color .18s ease;
+    }
+    .settings-brand-link:hover {
+      color: var(--ui-text);
+      text-decoration: underline;
     }
     /* 조직 생성 모달 생성 버튼 */
     .settings-row-split {
