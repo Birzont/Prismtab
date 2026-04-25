@@ -1505,13 +1505,16 @@
     }
     .profile-card {
       display: none;
-      gap: 10px;
+      gap: 8px;
       align-items: stretch;
-      padding: 10px;
-      border: 1px solid var(--ui-border-soft);
+      padding: 10px 2px;
+      border: none;
       border-radius: 12px;
       background: var(--ui-surface);
       margin-bottom: 8px;
+    }
+    #accountSettingsSection > h3 {
+      display: none;
     }
     .profile-card.open {
       display: flex;
