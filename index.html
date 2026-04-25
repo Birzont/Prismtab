@@ -6878,6 +6878,31 @@
       return u.toString();
     }
 
+    async function fetchInviteOrganizationByCode(rawCode) {
+      const normalizedCode = normalizeInviteCode(rawCode);
+      if (!normalizedCode || !supabaseClient) return { org: null, sourceTable: null, error: null };
+      const candidateTables = ['shortcut_organizations', 'short_organizations'];
+      for (const tableName of candidateTables) {
+        const { data, error } = await supabaseClient
+          .from(tableName)
+          .select('*')
+          .ilike('invite_code', normalizedCode)
+          .limit(1);
+        if (error) {
+          const msg = (error.message || '').toLowerCase();
+          // table does not exist -> try next candidate table
+          if (msg.includes('does not exist') || msg.includes('relation') || msg.includes('schema cache')) {
+            continue;
+          }
+          return { org: null, sourceTable: tableName, error };
+        }
+        if (data && data[0]) {
+          return { org: data[0], sourceTable: tableName, error: null };
+        }
+      }
+      return { org: null, sourceTable: null, error: null };
+    }
+
     async function openInviteAcceptByCode(code) {
       const normalizedCode = normalizeInviteCode(code);
       if (!normalizedCode || !supabaseClient) return;
@@ -6886,20 +6911,16 @@
         queueInviteLoginFlow(normalizedCode);
         return;
       }
-      const { data, error } = await supabaseClient
-        .from('shortcut_organizations')
-        .select('*')
-        .ilike('invite_code', normalizedCode)
-        .limit(1);
-      if (error) {
-        notify(error.message || getLanguageText('settings.inviteInfoNotFound', 'Invite information not found.'));
+      const lookup = await fetchInviteOrganizationByCode(normalizedCode);
+      if (lookup.error) {
+        notify(lookup.error.message || getLanguageText('settings.inviteInfoNotFound', 'Invite information not found.'));
         return;
       }
-      if (!data || !data[0]) {
+      if (!lookup.org) {
         notify(getLanguageText('settings.inviteInfoNotFound', 'Invite information not found.'));
         return;
       }
-      const org = data[0];
+      const org = lookup.org;
       if (!org.invite_expires_at || new Date(org.invite_expires_at).getTime() < Date.now()) {
         notify(getLanguageText('settings.inviteCodeExpired', 'Invite code has expired.'));
         return;
@@ -6919,20 +6940,16 @@
     async function acceptInviteCode() {
       const normalizedCode = normalizeInviteCode(pendingInviteCode);
       if (!normalizedCode || !supabaseClient || !isLoggedIn()) return;
-      const { data, error } = await supabaseClient
-        .from('shortcut_organizations')
-        .select('*')
-        .ilike('invite_code', normalizedCode)
-        .limit(1);
-      if (error || !data || !data[0]) {
+      const lookup = await fetchInviteOrganizationByCode(normalizedCode);
+      if (lookup.error || !lookup.org || !lookup.sourceTable) {
         notify(getLanguageText('settings.inviteInfoNotFound', 'Invite information not found.'));
         return;
       }
-      const org = data[0];
+      const org = lookup.org;
       const memberIds = getOrgMemberIds(org);
       if (!memberIds.includes(currentUser.id)) memberIds.push(currentUser.id);
       await supabaseClient
-        .from('shortcut_organizations')
+        .from(lookup.sourceTable)
         .update({ member_user_ids: memberIds })
         .eq('id', org.id);
       pendingInviteCode = null;
