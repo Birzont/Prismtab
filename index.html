@@ -6880,6 +6880,8 @@
           organization_id: org.id,
           invite_code: code,
           expires_at: expiresAt,
+          organization_name: org.name || '',
+          organization_logo_url: org.logo_url || '',
           created_by_user_id: currentUser?.id || null,
           consumed_at: null
         }, { onConflict: 'organization_id' });
@@ -6916,7 +6918,7 @@
       const nowIso = new Date().toISOString();
       const { data, error } = await supabaseClient
         .from('shortcut_org_invites')
-        .select('invite_code, expires_at')
+        .select('invite_code, expires_at, organization_name, organization_logo_url')
         .eq('organization_id', org.id)
         .is('consumed_at', null)
         .gte('expires_at', nowIso)
@@ -6927,6 +6929,8 @@
       const inviteCode = normalizeInviteCode(row.invite_code);
       org.invite_code = inviteCode;
       org.invite_expires_at = row.expires_at || null;
+      if (row.organization_name) org.name = row.organization_name;
+      if (typeof row.organization_logo_url === 'string') org.logo_url = row.organization_logo_url;
       return inviteCode;
     }
 
@@ -6950,7 +6954,7 @@
       const tableName = 'shortcut_org_invites';
       const { data, error } = await supabaseClient
         .from(tableName)
-        .select('organization_id, invite_code, expires_at')
+        .select('organization_id, invite_code, expires_at, organization_name, organization_logo_url')
         .eq('invite_code', normalizedCode)
         .is('consumed_at', null)
         .limit(1);
@@ -6966,15 +6970,11 @@
       }
       if (data && data[0]) {
         const inviteRow = data[0];
-        const orgRes = await supabaseClient
-          .from('shortcut_organizations')
-          .select('id,name,logo_url,member_user_ids')
-          .eq('id', inviteRow.organization_id)
-          .limit(1);
-        const org = (orgRes.data && orgRes.data[0]) ? orgRes.data[0] : {
+        const org = {
           id: inviteRow.organization_id,
-          name: getLanguageText('settings.org', 'Organization'),
-          logo_url: ''
+          name: inviteRow.organization_name || getLanguageText('settings.org', 'Organization'),
+          logo_url: inviteRow.organization_logo_url || '',
+          member_user_ids: []
         };
         org.invite_code = normalizeInviteCode(inviteRow.invite_code || normalizedCode);
         org.invite_expires_at = inviteRow.expires_at || null;
@@ -7066,38 +7066,24 @@
         notify(getLanguageText('settings.inviteInfoNotFound', 'Invite information not found.'));
         return;
       }
-      const org = lookup.org;
-      const memberIds = getOrgMemberIds(org);
-      if (!memberIds.includes(currentUser.id)) memberIds.push(currentUser.id);
-      debugInviteLog('acceptInviteCode:before-update', {
-        normalizedCode,
-        orgId: org.id,
-        sourceTable: 'shortcut_organizations',
-        memberCountBefore: getOrgMemberIds(org).length,
-        memberCountAfter: memberIds.length
-      });
-      const { error: orgUpdateError } = await supabaseClient
-        .from('shortcut_organizations')
-        .update({ member_user_ids: memberIds })
-        .eq('id', org.id);
-      if (orgUpdateError) {
-        debugInviteLog('acceptInviteCode:update-org-failed', { message: orgUpdateError.message });
-        notify(orgUpdateError.message || getLanguageText('settings.inviteAcceptFailed', 'Failed to accept invite. Check invite update policy.'));
+      const { data: acceptedOrgRows, error: acceptError } = await supabaseClient
+        .rpc('accept_shortcut_org_invite', { p_invite_code: normalizedCode });
+      if (acceptError) {
+        debugInviteLog('acceptInviteCode:rpc-failed', { message: acceptError.message, details: acceptError.details || null });
+        notify(acceptError.message || getLanguageText('settings.inviteAcceptFailed', 'Failed to accept invite. Check invite update policy.'));
         return;
       }
-      await supabaseClient
-        .from('shortcut_org_invites')
-        .update({ consumed_at: new Date().toISOString(), consumed_by_user_id: currentUser.id })
-        .eq('invite_code', normalizedCode);
+      const acceptedOrg = Array.isArray(acceptedOrgRows) ? acceptedOrgRows[0] : acceptedOrgRows;
+      const nextOrgId = acceptedOrg?.org_id || lookup.org.id;
       debugInviteLog('acceptInviteCode:success', {
         normalizedCode,
-        orgId: org.id
+        orgId: nextOrgId
       });
       pendingInviteCode = null;
       document.getElementById('inviteAcceptOverlay').classList.remove('open');
       await loadOrganizations();
       await saveOrganizationRanking();
-      await switchScopeToOrg(org.id);
+      await switchScopeToOrg(nextOrgId);
       refreshOrgSwitchSelect();
       updatePermissionHints();
       notify(getLanguageText('settings.orgJoinDone', 'Organization join complete'));
