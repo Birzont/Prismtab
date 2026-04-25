@@ -3559,6 +3559,12 @@
       if (!normalized) return;
       const alreadyQueued = pendingInviteCodeAfterLogin === normalized;
       pendingInviteCodeAfterLogin = normalized;
+      debugInviteLog('queueInviteLoginFlow', {
+        normalized,
+        alreadyQueued,
+        isLoggedIn: isLoggedIn(),
+        href: location.href
+      });
       settingsOverlay.classList.add('open');
       if (!alreadyQueued) {
         notify(getLanguageText('settings.needLogin', 'Login is required.'));
@@ -4020,6 +4026,10 @@
       authPhase: 'boot'
     };
     const SHOW_DEBUG = /(?:\?|&)debug=1(?:&|$)/.test(location.search);
+    function debugInviteLog(step, payload) {
+      if (!SHOW_DEBUG) return;
+      console.log(`[invite-debug] ${step}`, payload || {});
+    }
 
     function persistActiveScope() {
       localStorage.setItem('shortcut_active_scope', JSON.stringify({
@@ -6840,6 +6850,11 @@
 
     async function handleGenerateInviteCode() {
       const org = getInviteTargetOrg();
+      debugInviteLog('handleGenerateInviteCode:start', {
+        orgId: org && org.id,
+        orgName: org && org.name,
+        currentUserId: currentUser && currentUser.id
+      });
       if (!canCreateInviteCodeForOrg(org)) {
         notify(getLanguageText('settings.ownerOnlyInviteCode', 'Only owners can generate invite code.'));
         return;
@@ -6851,9 +6866,15 @@
         .update({ invite_code: code, invite_expires_at: expiresAt })
         .eq('id', org.id);
       if (error) {
+        debugInviteLog('handleGenerateInviteCode:error', { message: error.message, details: error.details || null });
         notify(getLanguageText('settings.inviteCodeCreateFailed', 'Failed to create invite code.'));
         return;
       }
+      debugInviteLog('handleGenerateInviteCode:success', {
+        orgId: org.id,
+        inviteCode: code,
+        inviteExpiresAt: expiresAt
+      });
       org.invite_code = code;
       org.invite_expires_at = expiresAt;
       if (activeOrg && activeOrg.id === org.id) {
@@ -6880,6 +6901,7 @@
 
     async function fetchInviteOrganizationByCode(rawCode) {
       const normalizedCode = normalizeInviteCode(rawCode);
+      debugInviteLog('fetchInviteOrganizationByCode:start', { rawCode, normalizedCode });
       if (!normalizedCode || !supabaseClient) return { org: null, sourceTable: null, error: null };
       const tableName = 'shortcut_organizations';
       const { data, error } = await supabaseClient
@@ -6888,18 +6910,43 @@
         .eq('invite_code', normalizedCode)
         .limit(1);
       if (error) {
+        debugInviteLog('fetchInviteOrganizationByCode:error', {
+          normalizedCode,
+          tableName,
+          message: error.message,
+          details: error.details || null,
+          hint: error.hint || null
+        });
         return { org: null, sourceTable: tableName, error };
       }
       if (data && data[0]) {
+        debugInviteLog('fetchInviteOrganizationByCode:found', {
+          normalizedCode,
+          tableName,
+          orgId: data[0].id,
+          orgName: data[0].name,
+          inviteExpiresAt: data[0].invite_expires_at || null
+        });
         return { org: data[0], sourceTable: tableName, error: null };
       }
+      debugInviteLog('fetchInviteOrganizationByCode:not-found', { normalizedCode, tableName });
       return { org: null, sourceTable: tableName, error: null };
     }
 
     async function openInviteAcceptByCode(code) {
       const normalizedCode = normalizeInviteCode(code);
+      debugInviteLog('openInviteAcceptByCode:start', {
+        rawCode: code,
+        normalizedCode,
+        isLoggedIn: isLoggedIn(),
+        currentUserId: currentUser && currentUser.id
+      });
       if (!normalizedCode || !supabaseClient) return;
       const resolvedUser = await ensureCurrentUser();
+      debugInviteLog('openInviteAcceptByCode:after-ensureCurrentUser', {
+        resolvedUserId: resolvedUser && resolvedUser.id,
+        isLoggedIn: isLoggedIn()
+      });
       if (!resolvedUser || !resolvedUser.id) {
         queueInviteLoginFlow(normalizedCode);
         return;
@@ -6915,9 +6962,20 @@
       }
       const org = lookup.org;
       if (!org.invite_expires_at || new Date(org.invite_expires_at).getTime() < Date.now()) {
+        debugInviteLog('openInviteAcceptByCode:expired', {
+          normalizedCode,
+          orgId: org.id,
+          inviteExpiresAt: org.invite_expires_at || null,
+          nowIso: new Date().toISOString()
+        });
         notify(getLanguageText('settings.inviteCodeExpired', 'Invite code has expired.'));
         return;
       }
+      debugInviteLog('openInviteAcceptByCode:open-overlay', {
+        normalizedCode,
+        orgId: org.id,
+        orgName: org.name
+      });
       pendingInviteCode = normalizedCode;
       document.getElementById('inviteAcceptText').textContent = getLanguageTextWithParams('settings.joinOrgQuestion', 'Join {name}?', { name: org.name });
       const logo = document.getElementById('inviteOrgLogo');
@@ -6932,19 +6990,42 @@
 
     async function acceptInviteCode() {
       const normalizedCode = normalizeInviteCode(pendingInviteCode);
+      debugInviteLog('acceptInviteCode:start', {
+        pendingInviteCode,
+        normalizedCode,
+        isLoggedIn: isLoggedIn(),
+        currentUserId: currentUser && currentUser.id
+      });
       if (!normalizedCode || !supabaseClient || !isLoggedIn()) return;
       const lookup = await fetchInviteOrganizationByCode(normalizedCode);
       if (lookup.error || !lookup.org || !lookup.sourceTable) {
+        debugInviteLog('acceptInviteCode:lookup-failed', {
+          normalizedCode,
+          hasOrg: Boolean(lookup.org),
+          sourceTable: lookup.sourceTable,
+          errorMessage: lookup.error && lookup.error.message
+        });
         notify(getLanguageText('settings.inviteInfoNotFound', 'Invite information not found.'));
         return;
       }
       const org = lookup.org;
       const memberIds = getOrgMemberIds(org);
       if (!memberIds.includes(currentUser.id)) memberIds.push(currentUser.id);
+      debugInviteLog('acceptInviteCode:before-update', {
+        normalizedCode,
+        orgId: org.id,
+        sourceTable: lookup.sourceTable,
+        memberCountBefore: getOrgMemberIds(org).length,
+        memberCountAfter: memberIds.length
+      });
       await supabaseClient
         .from(lookup.sourceTable)
         .update({ member_user_ids: memberIds })
         .eq('id', org.id);
+      debugInviteLog('acceptInviteCode:success', {
+        normalizedCode,
+        orgId: org.id
+      });
       pendingInviteCode = null;
       document.getElementById('inviteAcceptOverlay').classList.remove('open');
       await loadOrganizations();
@@ -7068,6 +7149,12 @@
         }
         const inviteFromUrl = getInviteCodeFromUrl();
         const inviteCodeToHandle = normalizeInviteCode(inviteFromUrl || pendingInviteCodeAfterLogin || '');
+        debugInviteLog('refreshAuthSession:invite-check', {
+          inviteFromUrl,
+          pendingInviteCodeAfterLogin,
+          inviteCodeToHandle,
+          currentUserId: currentUser && currentUser.id
+        });
         if (inviteCodeToHandle) {
           pendingInviteCodeAfterLogin = null;
           await openInviteAcceptByCode(inviteCodeToHandle);
@@ -7521,6 +7608,7 @@
 
       document.getElementById('joinOrgBtn').addEventListener('click', async () => {
         const code = document.getElementById('joinCodeInput').value.trim();
+        debugInviteLog('joinOrgBtn:click', { code, normalizedCode: normalizeInviteCode(code) });
         if (!code) return notify(getLanguageText('settings.enterJoinCode', 'Please enter join code.'));
         await ensureCurrentUser();
         await openInviteAcceptByCode(code);
