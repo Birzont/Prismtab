@@ -3276,8 +3276,18 @@
       return !!(org && currentUser && org.owner_id === currentUser.id);
     }
 
-    function canCreateInviteCodeForOrg(org) {
-      return !!(supabaseClient && isOwnerOfOrg(org));
+    async function canCreateInviteCodeForOrg(org) {
+      if (!(supabaseClient && currentUser && org && org.id)) return false;
+      if (isOwnerOfOrg(org)) return true;
+      // spaceModalContextOrg가 축약된 객체일 수 있어 DB로 owner 여부를 재검증
+      const { data, error } = await supabaseClient
+        .from('shortcut_organizations')
+        .select('id')
+        .eq('id', org.id)
+        .eq('owner_id', currentUser.id)
+        .limit(1);
+      if (error) return false;
+      return !!(data && data[0]);
     }
 
     function getInviteTargetOrg() {
@@ -6858,7 +6868,7 @@
         orgName: org && org.name,
         currentUserId: currentUser && currentUser.id
       });
-      if (!canCreateInviteCodeForOrg(org)) {
+      if (!(await canCreateInviteCodeForOrg(org))) {
         notify(getLanguageText('settings.ownerOnlyInviteCode', 'Only owners can generate invite code.'));
         return;
       }
@@ -6961,7 +6971,11 @@
           .select('id,name,logo_url,member_user_ids')
           .eq('id', inviteRow.organization_id)
           .limit(1);
-        const org = (orgRes.data && orgRes.data[0]) ? orgRes.data[0] : { id: inviteRow.organization_id, name: '' };
+        const org = (orgRes.data && orgRes.data[0]) ? orgRes.data[0] : {
+          id: inviteRow.organization_id,
+          name: getLanguageText('settings.org', 'Organization'),
+          logo_url: ''
+        };
         org.invite_code = normalizeInviteCode(inviteRow.invite_code || normalizedCode);
         org.invite_expires_at = inviteRow.expires_at || null;
         debugInviteLog('fetchInviteOrganizationByCode:found', {
@@ -7068,7 +7082,7 @@
         .eq('id', org.id);
       if (orgUpdateError) {
         debugInviteLog('acceptInviteCode:update-org-failed', { message: orgUpdateError.message });
-        notify(orgUpdateError.message || getLanguageText('settings.inviteInfoNotFound', 'Invite information not found.'));
+        notify(orgUpdateError.message || getLanguageText('settings.inviteAcceptFailed', 'Failed to accept invite. Check invite update policy.'));
         return;
       }
       await supabaseClient
