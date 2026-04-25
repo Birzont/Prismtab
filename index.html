@@ -7151,7 +7151,6 @@
                 }
                 await syncAuthUiImmediately();
                 clearRuntimeError();
-                notify(getLanguageText('settings.loginDone', 'Logged in.'));
                 try {
                   closeSettingsModal();
                 } catch (e) { /* ignore */ }
@@ -7200,7 +7199,6 @@
           currentUser = data?.user || data?.session?.user || currentUser;
           await syncAuthUiImmediately();
           clearRuntimeError();
-          notify(getLanguageText('settings.loginDone', 'Logged in.'));
         } catch (e) {
           showRuntimeError(getLanguageText('settings.loginException', 'Exception while processing login'), e && e.message ? e.message : String(e));
         }
@@ -7368,7 +7366,6 @@
         } catch (e) {
           if (!isLockError(e)) {
             showRuntimeError(getLanguageText('settings.logoutFailed', 'Logout failed'), e && e.message ? e.message : String(e));
-            notify(e && e.message ? e.message : getLanguageText('settings.logoutFailed', 'Logout failed'));
             return;
           }
           // lock 에러는 로컬 강제 정리로 복구 가능
@@ -7391,10 +7388,8 @@
         clearRuntimeError();
         if (error && !isLockError(error)) {
           showRuntimeError(getLanguageText('settings.logoutWarning', 'Warning while processing logout'), error);
-          notify(getLanguageTextWithParams('settings.logoutErrorLocalCleared', '{error} (local state cleared)', { error: error.message || getLanguageText('settings.logoutFailed', 'Logout failed') }));
-        } else {
-          notify(getLanguageText('settings.loggedOut', 'Logged out.'));
         }
+        window.location.reload();
       });
 
       document.getElementById('createOrgBtn').addEventListener('click', async () => {
