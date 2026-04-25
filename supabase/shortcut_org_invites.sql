@@ -127,3 +127,125 @@ $$;
 
 revoke all on function public.accept_shortcut_org_invite(text) from public;
 grant execute on function public.accept_shortcut_org_invite(text) to authenticated;
+
+create or replace function public.transfer_shortcut_org_owner(p_org_id uuid, p_new_owner_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_uid uuid;
+  v_members uuid[];
+begin
+  v_uid := auth.uid();
+  if v_uid is null then
+    raise exception 'Not authenticated';
+  end if;
+  if p_org_id is null or p_new_owner_id is null then
+    raise exception 'Invalid owner transfer params';
+  end if;
+
+  select coalesce(member_user_ids, array[]::uuid[])
+  into v_members
+  from public.shortcut_organizations
+  where id = p_org_id
+    and owner_id = v_uid
+  for update;
+
+  if v_members is null then
+    raise exception 'Only owner can transfer ownership';
+  end if;
+
+  if not (p_new_owner_id = any(v_members)) then
+    v_members := array_append(v_members, p_new_owner_id);
+  end if;
+
+  update public.shortcut_organizations
+  set owner_id = p_new_owner_id,
+      member_user_ids = v_members
+  where id = p_org_id;
+end;
+$$;
+
+revoke all on function public.transfer_shortcut_org_owner(uuid, uuid) from public;
+grant execute on function public.transfer_shortcut_org_owner(uuid, uuid) to authenticated;
+
+create or replace function public.leave_shortcut_org(p_org_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_uid uuid;
+  v_org record;
+  v_members uuid[];
+  v_aliases jsonb;
+begin
+  v_uid := auth.uid();
+  if v_uid is null then
+    raise exception 'Not authenticated';
+  end if;
+  if p_org_id is null then
+    raise exception 'Invalid organization';
+  end if;
+
+  select id, owner_id, coalesce(member_user_ids, array[]::uuid[]) as member_user_ids, coalesce(member_aliases, '{}'::jsonb) as member_aliases
+  into v_org
+  from public.shortcut_organizations
+  where id = p_org_id
+  for update;
+
+  if v_org.id is null then
+    raise exception 'Organization not found';
+  end if;
+  if v_org.owner_id = v_uid then
+    raise exception 'Owner must transfer ownership first';
+  end if;
+  if not (v_uid = any(v_org.member_user_ids)) then
+    raise exception 'You are not a member of this organization';
+  end if;
+
+  v_members := array_remove(v_org.member_user_ids, v_uid);
+  v_aliases := v_org.member_aliases - v_uid::text;
+
+  update public.shortcut_organizations
+  set member_user_ids = v_members,
+      member_aliases = v_aliases
+  where id = p_org_id;
+end;
+$$;
+
+revoke all on function public.leave_shortcut_org(uuid) from public;
+grant execute on function public.leave_shortcut_org(uuid) to authenticated;
+
+create or replace function public.delete_shortcut_org(p_org_id uuid, p_confirm_text text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_uid uuid;
+begin
+  v_uid := auth.uid();
+  if v_uid is null then
+    raise exception 'Not authenticated';
+  end if;
+  if p_confirm_text is distinct from 'Delete' then
+    raise exception 'Type Delete to confirm';
+  end if;
+
+  delete from public.shortcut_organizations
+  where id = p_org_id
+    and owner_id = v_uid;
+
+  if not found then
+    raise exception 'Only owner can delete this organization';
+  end if;
+end;
+$$;
+
+revoke all on function public.delete_shortcut_org(uuid, text) from public;
+grant execute on function public.delete_shortcut_org(uuid, text) to authenticated;

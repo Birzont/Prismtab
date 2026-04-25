@@ -2842,6 +2842,17 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="orgLeaveConfirmOverlay">
+    <div class="invite-overlay-card">
+      <h2 class="invite-overlay-title" id="orgLeaveTitle">조직 떠나기</h2>
+      <p class="invite-overlay-text" id="orgLeaveText">정말 이 조직을 떠나시겠습니까?</p>
+      <div class="inline-row invite-overlay-actions">
+        <button type="button" class="btn-cancel" id="orgLeaveCancelBtn">취소</button>
+        <button type="button" class="btn-save" id="orgLeaveConfirmBtn">떠나기</button>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="privacyPolicyOverlay" role="presentation">
     <div class="modal policy-md-modal" role="dialog" aria-modal="true" aria-labelledby="privacyPolicyTitle">
       <div class="modal-header policy-md-modal-header">
@@ -3404,29 +3415,23 @@
 
     async function leaveOrganizationFromMenu(org) {
       if (!org || !supabaseClient || !currentUser) return;
-      if (isOwnerOfOrg(org)) {
-        notify('Owner는 떠나기 전에 다른 Owner를 지정해야 합니다.');
-        return;
+      pendingLeaveOrgId = org.id;
+      pendingLeaveOwnerBlocked = isOwnerOfOrg(org);
+      const overlay = document.getElementById('orgLeaveConfirmOverlay');
+      const titleEl = document.getElementById('orgLeaveTitle');
+      const textEl = document.getElementById('orgLeaveText');
+      const confirmBtn = document.getElementById('orgLeaveConfirmBtn');
+      if (titleEl) titleEl.textContent = pendingLeaveOwnerBlocked ? '권한 이전 필요' : '조직 떠나기';
+      if (textEl) {
+        textEl.textContent = pendingLeaveOwnerBlocked
+          ? 'Owner는 떠나기 전에 다른 Owner를 지정해야 합니다.'
+          : '정말 이 조직을 떠나시겠습니까?';
       }
-      if (!window.confirm('정말 이 조직을 떠나시겠습니까?')) return;
-      const nextMembers = getOrgMemberIds(org).filter((id) => id !== currentUser.id);
-      const nextAliases = { ...(getOrgAliasMap(org)) };
-      delete nextAliases[currentUser.id];
-      const { error } = await supabaseClient
-        .from('shortcut_organizations')
-        .update({ member_user_ids: nextMembers, member_aliases: nextAliases })
-        .eq('id', org.id);
-      if (error) {
-        notify(error.message || '조직 떠나기에 실패했습니다.');
-        return;
+      if (confirmBtn) {
+        confirmBtn.textContent = pendingLeaveOwnerBlocked ? '확인' : '떠나기';
+        confirmBtn.disabled = false;
       }
-      if (isOrgScope() && activeScope.orgId === org.id) {
-        await switchScopeToPersonal();
-      }
-      await loadOrganizations();
-      refreshOrgSwitchSelect();
-      render();
-      notify('조직을 떠났습니다.');
+      if (overlay) overlay.classList.add('open');
     }
 
     function getInviteTargetOrg() {
@@ -4156,6 +4161,8 @@
     let pendingInviteCode = null;
     let pendingInviteCodeAfterLogin = null;
     let pendingDeleteOrgId = null;
+    let pendingLeaveOrgId = null;
+    let pendingLeaveOwnerBlocked = false;
     let dragSrcIndex = null;
     let dockDragSrcIndex = null;
     let resizeTimer = null;
@@ -7760,13 +7767,8 @@
           notify('새 Owner를 선택해 주세요.');
           return;
         }
-        if (!window.confirm('Owner 권한을 넘기면 되돌릴 수 없습니다. 계속할까요?')) return;
-        const memberIds = getOrgMemberIds(org);
-        const nextMembers = memberIds.includes(nextOwnerId) ? memberIds : [...memberIds, nextOwnerId];
         const { error } = await supabaseClient
-          .from('shortcut_organizations')
-          .update({ owner_id: nextOwnerId, member_user_ids: nextMembers })
-          .eq('id', org.id);
+          .rpc('transfer_shortcut_org_owner', { p_org_id: org.id, p_new_owner_id: nextOwnerId });
         if (error) {
           notify(error.message || 'Owner 권한 넘기기에 실패했습니다.');
           return;
@@ -7812,9 +7814,7 @@
         const orgId = pendingDeleteOrgId;
         if (!orgId || !supabaseClient) return;
         const { error } = await supabaseClient
-          .from('shortcut_organizations')
-          .delete()
-          .eq('id', orgId);
+          .rpc('delete_shortcut_org', { p_org_id: orgId, p_confirm_text: 'Delete' });
         if (error) {
           notify(error.message || '조직 삭제에 실패했습니다.');
           return;
@@ -7833,6 +7833,44 @@
         if (e.target === document.getElementById('orgDeleteConfirmOverlay')) {
           pendingDeleteOrgId = null;
           document.getElementById('orgDeleteConfirmOverlay')?.classList.remove('open');
+        }
+      });
+      document.getElementById('orgLeaveCancelBtn')?.addEventListener('click', () => {
+        pendingLeaveOrgId = null;
+        pendingLeaveOwnerBlocked = false;
+        document.getElementById('orgLeaveConfirmOverlay')?.classList.remove('open');
+      });
+      document.getElementById('orgLeaveConfirmBtn')?.addEventListener('click', async () => {
+        const orgId = pendingLeaveOrgId;
+        if (!orgId || !supabaseClient) return;
+        if (pendingLeaveOwnerBlocked) {
+          pendingLeaveOrgId = null;
+          pendingLeaveOwnerBlocked = false;
+          document.getElementById('orgLeaveConfirmOverlay')?.classList.remove('open');
+          return;
+        }
+        const { error } = await supabaseClient
+          .rpc('leave_shortcut_org', { p_org_id: orgId });
+        if (error) {
+          notify(error.message || '조직 떠나기에 실패했습니다.');
+          return;
+        }
+        pendingLeaveOrgId = null;
+        pendingLeaveOwnerBlocked = false;
+        document.getElementById('orgLeaveConfirmOverlay')?.classList.remove('open');
+        if (isOrgScope() && activeScope.orgId === orgId) {
+          await switchScopeToPersonal();
+        }
+        await loadOrganizations();
+        refreshOrgSwitchSelect();
+        render();
+        notify('조직을 떠났습니다.');
+      });
+      document.getElementById('orgLeaveConfirmOverlay')?.addEventListener('click', (e) => {
+        if (e.target === document.getElementById('orgLeaveConfirmOverlay')) {
+          pendingLeaveOrgId = null;
+          pendingLeaveOwnerBlocked = false;
+          document.getElementById('orgLeaveConfirmOverlay')?.classList.remove('open');
         }
       });
       const dockShowSpacesToggleEl = document.getElementById('dockShowSpacesToggle');
