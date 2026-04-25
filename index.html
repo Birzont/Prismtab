@@ -1188,6 +1188,13 @@
     .org-card-dropdown button.org-card-dropdown-item:hover {
       background: #f2f4f6;
     }
+    .org-card-dropdown button.org-card-dropdown-item.org-card-dropdown-item--danger {
+      color: #d93b41;
+    }
+    .org-card-dropdown button.org-card-dropdown-item.org-card-dropdown-item--danger:hover {
+      background: #fff1f2;
+      color: #bf2a30;
+    }
     .org-dd-icon {
       flex-shrink: 0;
       color: #4e5968;
@@ -2137,17 +2144,52 @@
     .invite-overlay-card {
       background: #fff;
       border-radius: 16px;
-      padding: 20px;
+      padding: 22px 20px 18px;
       width: min(92vw, 420px);
       box-shadow: 0 8px 30px rgba(0,0,0,0.2);
       text-align: center;
     }
     .invite-overlay-card img {
-      width: 64px;
-      height: 64px;
-      border-radius: 14px;
-      object-fit: cover;
-      margin-bottom: 10px;
+      width: min(260px, 82%);
+      height: 72px;
+      border-radius: 12px;
+      object-fit: contain;
+      object-position: center;
+      background: #f6f8fb;
+      border: 1px solid #e5e8eb;
+      padding: 8px;
+      margin: 0 auto 10px;
+      display: block;
+    }
+    .invite-overlay-title {
+      margin: 2px 0 8px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #191f28;
+    }
+    .invite-overlay-text {
+      margin: 0 0 16px;
+      color: #4e5968;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .invite-overlay-actions {
+      justify-content: center;
+      gap: 10px;
+    }
+    .invite-overlay-actions .btn-cancel,
+    .invite-overlay-actions .btn-save {
+      min-width: 108px;
+    }
+    .btn-danger-outline {
+      border-color: #d93b41 !important;
+      color: #d93b41 !important;
+      background: #fff !important;
+    }
+    .btn-danger-outline:hover {
+      background: #d93b41 !important;
+      color: #fff !important;
+      border-color: #d93b41 !important;
     }
     .btn-copy-export {
       padding: 6px 12px;
@@ -2679,6 +2721,19 @@
         <input type="file" id="bgUploadInput" class="fancy-file-input" accept="image/*" style="margin-top:8px;">
         <div class="config-hint">이미지 업로드: 100KB 이하</div>
       </div>
+      <div class="form-group sm-stack sm-order-bg" id="spaceOwnerTransferGroup" style="display:none;">
+        <label for="spaceOwnerTransferSelect">조직 Owner 권한 넘기기</label>
+        <div class="inline-row">
+          <select id="spaceOwnerTransferSelect" style="flex:1 1 220px;"></select>
+          <button type="button" class="btn-mini" id="spaceOwnerTransferBtn">권한 넘기기</button>
+        </div>
+        <div class="config-hint">권한을 넘기면 되돌릴 수 없습니다. 이후에는 조직을 떠날 수 있습니다.</div>
+      </div>
+      <div class="form-group sm-stack sm-order-bg" id="spaceDeleteSection" style="display:none;">
+        <label>조직 삭제</label>
+        <button type="button" class="btn-mini btn-danger-outline" id="deleteOrgBtn">조직 삭제</button>
+        <div class="config-hint">삭제하려면 확인 팝업에서 <code>Delete</code>를 입력해야 하며, 이 작업은 번복할 수 없습니다.</div>
+      </div>
       <div class="form-group sm-stack sm-order-logo">
         <label for="logoUrl">로고 이미지 URL</label>
         <input type="url" id="logoUrl" placeholder="https://example.com/logo.png">
@@ -2766,11 +2821,23 @@
   <div class="modal-overlay" id="inviteAcceptOverlay">
     <div class="invite-overlay-card">
       <img id="inviteOrgLogo" src="" alt="조직 로고" style="display:none;">
-      <h2 style="font-size:1.1rem;margin-bottom:8px;">조직 초대</h2>
-      <p id="inviteAcceptText" style="margin-bottom:14px;color:#444;">조직에 가입할까요?</p>
-      <div class="inline-row" style="justify-content:center;">
+      <h2 class="invite-overlay-title">조직 초대</h2>
+      <p id="inviteAcceptText" class="invite-overlay-text">조직에 가입할까요?</p>
+      <div class="inline-row invite-overlay-actions">
         <button type="button" class="btn-cancel" id="inviteDeclineBtn">취소</button>
         <button type="button" class="btn-save" id="inviteAcceptBtn">수락</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="orgDeleteConfirmOverlay">
+    <div class="invite-overlay-card">
+      <h2 class="invite-overlay-title">조직 삭제 확인</h2>
+      <p class="invite-overlay-text" id="orgDeleteConfirmText">이 작업은 번복할 수 없습니다. 계속하려면 <b>Delete</b>를 입력하세요.</p>
+      <input type="text" id="orgDeleteConfirmInput" placeholder="Delete" style="width:100%;margin-bottom:12px;">
+      <div class="inline-row invite-overlay-actions">
+        <button type="button" class="btn-cancel" id="orgDeleteCancelBtn">취소</button>
+        <button type="button" class="btn-save" id="orgDeleteConfirmBtn" disabled>삭제</button>
       </div>
     </div>
   </div>
@@ -3288,6 +3355,78 @@
         .limit(1);
       if (error) return false;
       return !!(data && data[0]);
+    }
+
+    async function getOrgMemberProfilesForTransfer(org) {
+      if (!org || !supabaseClient || !currentUser) return [];
+      const memberIds = getOrgMemberIds(org).filter((id) => id && id !== currentUser.id);
+      if (!memberIds.length) return [];
+      const { data, error } = await supabaseClient
+        .from('users')
+        .select('id,username,email')
+        .in('id', memberIds);
+      if (error || !Array.isArray(data)) return memberIds.map((id) => ({ id, label: id }));
+      const byId = new Map(data.map((u) => [u.id, u]));
+      return memberIds.map((id) => {
+        const row = byId.get(id);
+        const label = row
+          ? (row.username || row.email || id)
+          : id;
+        return { id, label };
+      });
+    }
+
+    async function refreshSpaceOwnerTransferUi(org) {
+      const group = document.getElementById('spaceOwnerTransferGroup');
+      const select = document.getElementById('spaceOwnerTransferSelect');
+      const deleteSection = document.getElementById('spaceDeleteSection');
+      const canManage = settingsModalMode === 'space-settings' && !!org && isOwnerOfOrg(org);
+      if (!group || !select || !deleteSection) return;
+      group.style.display = canManage ? '' : 'none';
+      deleteSection.style.display = canManage ? '' : 'none';
+      if (!canManage) return;
+      const members = await getOrgMemberProfilesForTransfer(org);
+      select.innerHTML = '';
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = members.length ? '새 Owner를 선택하세요' : '넘길 수 있는 멤버가 없습니다';
+      select.appendChild(placeholder);
+      members.forEach((m) => {
+        const opt = document.createElement('option');
+        opt.value = m.id;
+        opt.textContent = m.label;
+        select.appendChild(opt);
+      });
+      select.disabled = members.length === 0;
+      const transferBtn = document.getElementById('spaceOwnerTransferBtn');
+      if (transferBtn) transferBtn.disabled = members.length === 0;
+    }
+
+    async function leaveOrganizationFromMenu(org) {
+      if (!org || !supabaseClient || !currentUser) return;
+      if (isOwnerOfOrg(org)) {
+        notify('Owner는 떠나기 전에 다른 Owner를 지정해야 합니다.');
+        return;
+      }
+      if (!window.confirm('정말 이 조직을 떠나시겠습니까?')) return;
+      const nextMembers = getOrgMemberIds(org).filter((id) => id !== currentUser.id);
+      const nextAliases = { ...(getOrgAliasMap(org)) };
+      delete nextAliases[currentUser.id];
+      const { error } = await supabaseClient
+        .from('shortcut_organizations')
+        .update({ member_user_ids: nextMembers, member_aliases: nextAliases })
+        .eq('id', org.id);
+      if (error) {
+        notify(error.message || '조직 떠나기에 실패했습니다.');
+        return;
+      }
+      if (isOrgScope() && activeScope.orgId === org.id) {
+        await switchScopeToPersonal();
+      }
+      await loadOrganizations();
+      refreshOrgSwitchSelect();
+      render();
+      notify('조직을 떠났습니다.');
     }
 
     function getInviteTargetOrg() {
@@ -4016,6 +4155,7 @@
     let workspaceOrder = [];
     let pendingInviteCode = null;
     let pendingInviteCodeAfterLogin = null;
+    let pendingDeleteOrgId = null;
     let dragSrcIndex = null;
     let dockDragSrcIndex = null;
     let resizeTimer = null;
@@ -5998,6 +6138,11 @@
           btnInv.type = 'button';
           btnInv.className = 'org-card-dropdown-item';
           btnInv.innerHTML = `${planeSvg}<span>${getLanguageText('settings.invite', 'Invite')}</span>`;
+          const leaveSvg = '<svg class="org-dd-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>';
+          const btnLeave = document.createElement('button');
+          btnLeave.type = 'button';
+          btnLeave.className = 'org-card-dropdown-item org-card-dropdown-item--danger';
+          btnLeave.innerHTML = `${leaveSvg}<span>조직 떠나기</span>`;
           const closeDropdown = () => {
             resetOrgCardDropdownPosition(dropdown);
             dropdown.style.display = 'none';
@@ -6043,10 +6188,16 @@
             closeDropdown();
             void enterSpaceInviteView(org);
           });
+          btnLeave.addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            closeDropdown();
+            void leaveOrganizationFromMenu(org);
+          });
           dropdown.appendChild(btnStart);
-          dropdown.appendChild(btnSpace);
+          if (isOwnerOfOrg(org)) dropdown.appendChild(btnSpace);
           dropdown.appendChild(btnAlias);
           dropdown.appendChild(btnInv);
+          dropdown.appendChild(btnLeave);
           menuWrap.appendChild(kebab);
           menuWrap.appendChild(dropdown);
           shell.appendChild(menuWrap);
@@ -6224,6 +6375,7 @@
         orgCardOpenDropdown = null;
       }
       placeSettingsStartPageSection();
+      void refreshSpaceOwnerTransferUi(null);
     }
 
     function renderPersonalSpaceHero() {
@@ -6295,6 +6447,8 @@
       reorderAccountSectionByAuth();
       refreshOrgSwitchSelect();
       updatePermissionHints();
+      await refreshSpaceOwnerTransferUi(null);
+      await refreshSpaceOwnerTransferUi(latest);
     }
 
     function renderSpaceSubHero(org) {
@@ -7035,12 +7189,17 @@
         orgName: org.name
       });
       pendingInviteCode = normalizedCode;
-      document.getElementById('inviteAcceptText').textContent = getLanguageTextWithParams('settings.joinOrgQuestion', 'Join {name}?', { name: org.name });
+      const safeOrgName = String(org.name || getLanguageText('settings.org', 'Organization')).trim();
+      document.getElementById('inviteAcceptText').textContent = getLanguageTextWithParams('settings.joinOrgQuestion', 'Join {name}?', { name: safeOrgName });
       const logo = document.getElementById('inviteOrgLogo');
       if (org.logo_url) {
         logo.src = org.logo_url;
+        logo.onerror = function handleInviteLogoError() {
+          logo.style.display = 'none';
+        };
         logo.style.display = 'inline-block';
       } else {
+        logo.removeAttribute('src');
         logo.style.display = 'none';
       }
       document.getElementById('inviteAcceptOverlay').classList.add('open');
@@ -7588,6 +7747,94 @@
       });
 
       document.getElementById('generateInviteBtn').addEventListener('click', handleGenerateInviteCode);
+      document.getElementById('spaceOwnerTransferBtn')?.addEventListener('click', async () => {
+        const org = spaceModalContextOrg;
+        const select = document.getElementById('spaceOwnerTransferSelect');
+        const nextOwnerId = select ? String(select.value || '').trim() : '';
+        if (!org || !org.id) return;
+        if (!isOwnerOfOrg(org)) {
+          notify('Owner만 권한을 넘길 수 있습니다.');
+          return;
+        }
+        if (!nextOwnerId) {
+          notify('새 Owner를 선택해 주세요.');
+          return;
+        }
+        if (!window.confirm('Owner 권한을 넘기면 되돌릴 수 없습니다. 계속할까요?')) return;
+        const memberIds = getOrgMemberIds(org);
+        const nextMembers = memberIds.includes(nextOwnerId) ? memberIds : [...memberIds, nextOwnerId];
+        const { error } = await supabaseClient
+          .from('shortcut_organizations')
+          .update({ owner_id: nextOwnerId, member_user_ids: nextMembers })
+          .eq('id', org.id);
+        if (error) {
+          notify(error.message || 'Owner 권한 넘기기에 실패했습니다.');
+          return;
+        }
+        notify('Owner 권한을 넘겼습니다.');
+        await loadOrganizations();
+        const latest = orgList.find((o) => o.id === org.id);
+        if (latest) {
+          spaceModalContextOrg = latest;
+          await refreshSpaceOwnerTransferUi(latest);
+        } else {
+          await switchScopeToPersonal();
+          closeSettingsModal();
+        }
+        refreshOrgSwitchSelect();
+        render();
+      });
+      document.getElementById('deleteOrgBtn')?.addEventListener('click', () => {
+        const org = spaceModalContextOrg;
+        if (!org || !org.id) return;
+        if (!isOwnerOfOrg(org)) {
+          notify('Owner만 조직을 삭제할 수 있습니다.');
+          return;
+        }
+        pendingDeleteOrgId = org.id;
+        const overlay = document.getElementById('orgDeleteConfirmOverlay');
+        const input = document.getElementById('orgDeleteConfirmInput');
+        const confirmBtn = document.getElementById('orgDeleteConfirmBtn');
+        if (input) input.value = '';
+        if (confirmBtn) confirmBtn.disabled = true;
+        if (overlay) overlay.classList.add('open');
+      });
+      document.getElementById('orgDeleteConfirmInput')?.addEventListener('input', (e) => {
+        const value = e && e.target ? String(e.target.value || '') : '';
+        const confirmBtn = document.getElementById('orgDeleteConfirmBtn');
+        if (confirmBtn) confirmBtn.disabled = value !== 'Delete';
+      });
+      document.getElementById('orgDeleteCancelBtn')?.addEventListener('click', () => {
+        pendingDeleteOrgId = null;
+        document.getElementById('orgDeleteConfirmOverlay')?.classList.remove('open');
+      });
+      document.getElementById('orgDeleteConfirmBtn')?.addEventListener('click', async () => {
+        const orgId = pendingDeleteOrgId;
+        if (!orgId || !supabaseClient) return;
+        const { error } = await supabaseClient
+          .from('shortcut_organizations')
+          .delete()
+          .eq('id', orgId);
+        if (error) {
+          notify(error.message || '조직 삭제에 실패했습니다.');
+          return;
+        }
+        pendingDeleteOrgId = null;
+        document.getElementById('orgDeleteConfirmOverlay')?.classList.remove('open');
+        if (isOrgScope() && activeScope.orgId === orgId) {
+          await switchScopeToPersonal();
+        }
+        await loadOrganizations();
+        refreshOrgSwitchSelect();
+        render();
+        closeSettingsModal();
+      });
+      document.getElementById('orgDeleteConfirmOverlay')?.addEventListener('click', (e) => {
+        if (e.target === document.getElementById('orgDeleteConfirmOverlay')) {
+          pendingDeleteOrgId = null;
+          document.getElementById('orgDeleteConfirmOverlay')?.classList.remove('open');
+        }
+      });
       const dockShowSpacesToggleEl = document.getElementById('dockShowSpacesToggle');
       if (dockShowSpacesToggleEl) {
         dockShowSpacesToggleEl.addEventListener('change', () => {

@@ -1178,6 +1178,13 @@
     .org-card-dropdown button.org-card-dropdown-item:hover {
       background: #f2f4f6;
     }
+    .org-card-dropdown button.org-card-dropdown-item.org-card-dropdown-item--danger {
+      color: #d93b41;
+    }
+    .org-card-dropdown button.org-card-dropdown-item.org-card-dropdown-item--danger:hover {
+      background: #fff1f2;
+      color: #bf2a30;
+    }
     .org-dd-icon {
       flex-shrink: 0;
       color: #4e5968;
@@ -2127,17 +2134,52 @@
     .invite-overlay-card {
       background: #fff;
       border-radius: 16px;
-      padding: 20px;
+      padding: 22px 20px 18px;
       width: min(92vw, 420px);
       box-shadow: 0 8px 30px rgba(0,0,0,0.2);
       text-align: center;
     }
     .invite-overlay-card img {
-      width: 64px;
-      height: 64px;
-      border-radius: 14px;
-      object-fit: cover;
-      margin-bottom: 10px;
+      width: min(260px, 82%);
+      height: 72px;
+      border-radius: 12px;
+      object-fit: contain;
+      object-position: center;
+      background: #f6f8fb;
+      border: 1px solid #e5e8eb;
+      padding: 8px;
+      margin: 0 auto 10px;
+      display: block;
+    }
+    .invite-overlay-title {
+      margin: 2px 0 8px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #191f28;
+    }
+    .invite-overlay-text {
+      margin: 0 0 16px;
+      color: #4e5968;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .invite-overlay-actions {
+      justify-content: center;
+      gap: 10px;
+    }
+    .invite-overlay-actions .btn-cancel,
+    .invite-overlay-actions .btn-save {
+      min-width: 108px;
+    }
+    .btn-danger-outline {
+      border-color: #d93b41 !important;
+      color: #d93b41 !important;
+      background: #fff !important;
+    }
+    .btn-danger-outline:hover {
+      background: #d93b41 !important;
+      color: #fff !important;
+      border-color: #d93b41 !important;
     }
     .btn-copy-export {
       padding: 6px 12px;

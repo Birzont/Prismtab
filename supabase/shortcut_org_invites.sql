@@ -72,7 +72,7 @@ declare
   v_uid uuid;
   v_code text;
   v_invite record;
-  v_members jsonb;
+  v_members uuid[];
 begin
   v_uid := auth.uid();
   if v_uid is null then
@@ -97,7 +97,7 @@ begin
     raise exception 'Invite not found or expired';
   end if;
 
-  select coalesce(o.member_user_ids, '[]'::jsonb)
+  select coalesce(o.member_user_ids, array[]::uuid[])
   into v_members
   from public.shortcut_organizations o
   where o.id = v_invite.organization_id
@@ -107,8 +107,8 @@ begin
     raise exception 'Organization not found';
   end if;
 
-  if not (v_members @> to_jsonb(array[v_uid::text])) then
-    v_members := v_members || to_jsonb(array[v_uid::text]);
+  if not (v_uid = any(v_members)) then
+    v_members := array_append(v_members, v_uid);
     update public.shortcut_organizations
     set member_user_ids = v_members
     where id = v_invite.organization_id;
