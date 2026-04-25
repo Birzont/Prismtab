@@ -3550,8 +3550,12 @@
       return q.get('invite') || '';
     }
 
+    function normalizeInviteCode(raw) {
+      return String(raw || '').trim().toUpperCase();
+    }
+
     function queueInviteLoginFlow(code) {
-      const normalized = String(code || '').trim();
+      const normalized = normalizeInviteCode(code);
       if (!normalized) return;
       const alreadyQueued = pendingInviteCodeAfterLogin === normalized;
       pendingInviteCodeAfterLogin = normalized;
@@ -6870,24 +6874,37 @@
 
     function buildInviteUrl(code) {
       const u = new URL(location.href);
-      u.searchParams.set('invite', code);
+      u.searchParams.set('invite', normalizeInviteCode(code));
       return u.toString();
     }
 
     async function openInviteAcceptByCode(code) {
-      if (!code || !supabaseClient || !isLoggedIn()) return;
+      const normalizedCode = normalizeInviteCode(code);
+      if (!normalizedCode || !supabaseClient) return;
+      const resolvedUser = await ensureCurrentUser();
+      if (!resolvedUser || !resolvedUser.id) {
+        queueInviteLoginFlow(normalizedCode);
+        return;
+      }
       const { data, error } = await supabaseClient
         .from('shortcut_organizations')
         .select('*')
-        .eq('invite_code', code)
+        .ilike('invite_code', normalizedCode)
         .limit(1);
-      if (error || !data || !data[0]) return;
+      if (error) {
+        notify(error.message || getLanguageText('settings.inviteInfoNotFound', 'Invite information not found.'));
+        return;
+      }
+      if (!data || !data[0]) {
+        notify(getLanguageText('settings.inviteInfoNotFound', 'Invite information not found.'));
+        return;
+      }
       const org = data[0];
       if (!org.invite_expires_at || new Date(org.invite_expires_at).getTime() < Date.now()) {
         notify(getLanguageText('settings.inviteCodeExpired', 'Invite code has expired.'));
         return;
       }
-      pendingInviteCode = code;
+      pendingInviteCode = normalizedCode;
       document.getElementById('inviteAcceptText').textContent = getLanguageTextWithParams('settings.joinOrgQuestion', 'Join {name}?', { name: org.name });
       const logo = document.getElementById('inviteOrgLogo');
       if (org.logo_url) {
@@ -6900,11 +6917,12 @@
     }
 
     async function acceptInviteCode() {
-      if (!pendingInviteCode || !supabaseClient || !isLoggedIn()) return;
+      const normalizedCode = normalizeInviteCode(pendingInviteCode);
+      if (!normalizedCode || !supabaseClient || !isLoggedIn()) return;
       const { data, error } = await supabaseClient
         .from('shortcut_organizations')
         .select('*')
-        .eq('invite_code', pendingInviteCode)
+        .ilike('invite_code', normalizedCode)
         .limit(1);
       if (error || !data || !data[0]) {
         notify(getLanguageText('settings.inviteInfoNotFound', 'Invite information not found.'));
@@ -7039,14 +7057,10 @@
           refreshOrgSwitchSelect();
         }
         const inviteFromUrl = getInviteCodeFromUrl();
-        const inviteCodeToHandle = String(inviteFromUrl || pendingInviteCodeAfterLogin || '').trim();
+        const inviteCodeToHandle = normalizeInviteCode(inviteFromUrl || pendingInviteCodeAfterLogin || '');
         if (inviteCodeToHandle) {
-          if (currentUser) {
-            pendingInviteCodeAfterLogin = null;
-            await openInviteAcceptByCode(inviteCodeToHandle);
-          } else {
-            queueInviteLoginFlow(inviteCodeToHandle);
-          }
+          pendingInviteCodeAfterLogin = null;
+          await openInviteAcceptByCode(inviteCodeToHandle);
         }
         clearRuntimeError();
       } catch (e) {
@@ -7498,11 +7512,13 @@
       document.getElementById('joinOrgBtn').addEventListener('click', async () => {
         const code = document.getElementById('joinCodeInput').value.trim();
         if (!code) return notify(getLanguageText('settings.enterJoinCode', 'Please enter join code.'));
-        if (!isLoggedIn()) {
-          queueInviteLoginFlow(code);
-          return;
-        }
+        await ensureCurrentUser();
         await openInviteAcceptByCode(code);
+      });
+      document.getElementById('joinCodeInput').addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        document.getElementById('joinOrgBtn').click();
       });
 
       document.getElementById('inviteDeclineBtn').addEventListener('click', () => {
