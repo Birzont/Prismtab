@@ -3551,7 +3551,10 @@
     }
 
     function normalizeInviteCode(raw) {
-      return String(raw || '').trim().toUpperCase();
+      return String(raw || '')
+        .replace(/[\u200B-\u200D\uFEFF]/g, '')
+        .trim()
+        .toUpperCase();
     }
 
     function queueInviteLoginFlow(code) {
@@ -6848,8 +6851,8 @@
         .eq('id', activeOrg.id);
     }
 
-    async function handleGenerateInviteCode() {
-      const org = getInviteTargetOrg();
+    async function handleGenerateInviteCode(targetOrg) {
+      const org = targetOrg || getInviteTargetOrg();
       debugInviteLog('handleGenerateInviteCode:start', {
         orgId: org && org.id,
         orgName: org && org.name,
@@ -6862,9 +6865,14 @@
       const code = generateInviteCode();
       const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
       const { error } = await supabaseClient
-        .from('shortcut_organizations')
-        .update({ invite_code: code, invite_expires_at: expiresAt })
-        .eq('id', org.id);
+        .from('shortcut_org_invites')
+        .upsert({
+          organization_id: org.id,
+          invite_code: code,
+          expires_at: expiresAt,
+          created_by_user_id: currentUser?.id || null,
+          consumed_at: null
+        }, { onConflict: 'organization_id' });
       if (error) {
         debugInviteLog('handleGenerateInviteCode:error', { message: error.message, details: error.details || null });
         notify(getLanguageText('settings.inviteCodeCreateFailed', 'Failed to create invite code.'));
@@ -6893,6 +6901,32 @@
       notify(getLanguageTextWithParams('settings.inviteCodeCreated', 'Invite code created: {code}', { code }));
     }
 
+    async function getActiveInviteCodeForOrg(org) {
+      if (!org || !org.id || !supabaseClient) return '';
+      const nowIso = new Date().toISOString();
+      const { data, error } = await supabaseClient
+        .from('shortcut_org_invites')
+        .select('invite_code, expires_at')
+        .eq('organization_id', org.id)
+        .is('consumed_at', null)
+        .gte('expires_at', nowIso)
+        .order('expires_at', { ascending: false })
+        .limit(1);
+      if (error || !data || !data[0]) return '';
+      const row = data[0];
+      const inviteCode = normalizeInviteCode(row.invite_code);
+      org.invite_code = inviteCode;
+      org.invite_expires_at = row.expires_at || null;
+      return inviteCode;
+    }
+
+    async function ensureInviteCodeForOrg(org) {
+      const existing = await getActiveInviteCodeForOrg(org);
+      if (existing) return existing;
+      await handleGenerateInviteCode(org);
+      return normalizeInviteCode(org && org.invite_code);
+    }
+
     function buildInviteUrl(code) {
       const u = new URL(location.href);
       u.searchParams.set('invite', normalizeInviteCode(code));
@@ -6903,11 +6937,12 @@
       const normalizedCode = normalizeInviteCode(rawCode);
       debugInviteLog('fetchInviteOrganizationByCode:start', { rawCode, normalizedCode });
       if (!normalizedCode || !supabaseClient) return { org: null, sourceTable: null, error: null };
-      const tableName = 'shortcut_organizations';
+      const tableName = 'shortcut_org_invites';
       const { data, error } = await supabaseClient
         .from(tableName)
-        .select('*')
+        .select('organization_id, invite_code, expires_at')
         .eq('invite_code', normalizedCode)
+        .is('consumed_at', null)
         .limit(1);
       if (error) {
         debugInviteLog('fetchInviteOrganizationByCode:error', {
@@ -6920,14 +6955,23 @@
         return { org: null, sourceTable: tableName, error };
       }
       if (data && data[0]) {
+        const inviteRow = data[0];
+        const orgRes = await supabaseClient
+          .from('shortcut_organizations')
+          .select('id,name,logo_url,member_user_ids')
+          .eq('id', inviteRow.organization_id)
+          .limit(1);
+        const org = (orgRes.data && orgRes.data[0]) ? orgRes.data[0] : { id: inviteRow.organization_id, name: '' };
+        org.invite_code = normalizeInviteCode(inviteRow.invite_code || normalizedCode);
+        org.invite_expires_at = inviteRow.expires_at || null;
         debugInviteLog('fetchInviteOrganizationByCode:found', {
           normalizedCode,
           tableName,
-          orgId: data[0].id,
-          orgName: data[0].name,
-          inviteExpiresAt: data[0].invite_expires_at || null
+          orgId: org.id,
+          orgName: org.name,
+          inviteExpiresAt: org.invite_expires_at || null
         });
-        return { org: data[0], sourceTable: tableName, error: null };
+        return { org, sourceTable: tableName, error: null };
       }
       debugInviteLog('fetchInviteOrganizationByCode:not-found', { normalizedCode, tableName });
       return { org: null, sourceTable: tableName, error: null };
@@ -7014,14 +7058,23 @@
       debugInviteLog('acceptInviteCode:before-update', {
         normalizedCode,
         orgId: org.id,
-        sourceTable: lookup.sourceTable,
+        sourceTable: 'shortcut_organizations',
         memberCountBefore: getOrgMemberIds(org).length,
         memberCountAfter: memberIds.length
       });
-      await supabaseClient
-        .from(lookup.sourceTable)
+      const { error: orgUpdateError } = await supabaseClient
+        .from('shortcut_organizations')
         .update({ member_user_ids: memberIds })
         .eq('id', org.id);
+      if (orgUpdateError) {
+        debugInviteLog('acceptInviteCode:update-org-failed', { message: orgUpdateError.message });
+        notify(orgUpdateError.message || getLanguageText('settings.inviteInfoNotFound', 'Invite information not found.'));
+        return;
+      }
+      await supabaseClient
+        .from('shortcut_org_invites')
+        .update({ consumed_at: new Date().toISOString(), consumed_by_user_id: currentUser.id })
+        .eq('invite_code', normalizedCode);
       debugInviteLog('acceptInviteCode:success', {
         normalizedCode,
         orgId: org.id
@@ -7579,10 +7632,11 @@
 
       document.getElementById('copyInviteUrlBtn').addEventListener('click', async () => {
         const org = getInviteTargetOrg();
-        if (!org || !org.invite_code) {
+        const inviteCode = await ensureInviteCodeForOrg(org);
+        if (!org || !inviteCode) {
           return notify(getLanguageText('settings.generateInviteCodeFirst', 'Generate an invite code first.'));
         }
-        const url = buildInviteUrl(org.invite_code);
+        const url = buildInviteUrl(inviteCode);
         await navigator.clipboard.writeText(url);
         notify(getLanguageText('settings.inviteUrlCopied', 'Invite URL copied.'));
       });
@@ -7592,15 +7646,12 @@
         const email = document.getElementById('spaceInviteEmailInput').value.trim();
         if (!org || !isOwnerOfOrg(org)) return;
         if (!email) return notify(getLanguageText('settings.emailRequired', 'Please enter email.'));
-        if (!org.invite_code) {
-          await handleGenerateInviteCode();
-        }
-        const org2 = getInviteTargetOrg();
-        if (!org2 || !org2.invite_code) return notify(getLanguageText('settings.generateInviteCodeFirst', 'Generate an invite code first.'));
-        const url = buildInviteUrl(org2.invite_code);
-        const subject = encodeURIComponent(getLanguageTextWithParams('settings.inviteMailSubject', '{name} space invitation', { name: org2.name }));
+        const inviteCode = await ensureInviteCodeForOrg(org);
+        if (!inviteCode) return notify(getLanguageText('settings.generateInviteCodeFirst', 'Generate an invite code first.'));
+        const url = buildInviteUrl(inviteCode);
+        const subject = encodeURIComponent(getLanguageTextWithParams('settings.inviteMailSubject', '{name} space invitation', { name: org.name }));
         const body = encodeURIComponent(getLanguageTextWithParams('settings.inviteMailBody', 'Hello,\n\nYou can accept the {name} space invitation from the link below.\n\n{url}\n', {
-          name: org2.name,
+          name: org.name,
           url
         }));
         window.location.href = `mailto:${encodeURIComponent(email)}?subject=${subject}&body=${body}`;
