@@ -6881,26 +6881,19 @@
     async function fetchInviteOrganizationByCode(rawCode) {
       const normalizedCode = normalizeInviteCode(rawCode);
       if (!normalizedCode || !supabaseClient) return { org: null, sourceTable: null, error: null };
-      const candidateTables = ['shortcut_organizations', 'short_organizations'];
-      for (const tableName of candidateTables) {
-        const { data, error } = await supabaseClient
-          .from(tableName)
-          .select('*')
-          .ilike('invite_code', normalizedCode)
-          .limit(1);
-        if (error) {
-          const msg = (error.message || '').toLowerCase();
-          // table does not exist -> try next candidate table
-          if (msg.includes('does not exist') || msg.includes('relation') || msg.includes('schema cache')) {
-            continue;
-          }
-          return { org: null, sourceTable: tableName, error };
-        }
-        if (data && data[0]) {
-          return { org: data[0], sourceTable: tableName, error: null };
-        }
+      const tableName = 'shortcut_organizations';
+      const { data, error } = await supabaseClient
+        .from(tableName)
+        .select('*')
+        .eq('invite_code', normalizedCode)
+        .limit(1);
+      if (error) {
+        return { org: null, sourceTable: tableName, error };
       }
-      return { org: null, sourceTable: null, error: null };
+      if (data && data[0]) {
+        return { org: data[0], sourceTable: tableName, error: null };
+      }
+      return { org: null, sourceTable: tableName, error: null };
     }
 
     async function openInviteAcceptByCode(code) {
