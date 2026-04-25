@@ -2475,7 +2475,7 @@
         <div class="space-sub-hero-title" id="spaceSubHeroTitle"></div>
       </div>
       <div class="inline-row settings-row-split sm-stack sm-order-invite" id="orgInviteActionsRow">
-        <button type="button" class="btn-mini" id="generateInviteBtn">초대 코드 생성(1시간)</button>
+        <button type="button" class="btn-mini" id="generateInviteBtn">초대 코드 생성(24시간)</button>
         <button type="button" class="btn-mini" id="copyInviteUrlBtn">초대 URL 복사</button>
       </div>
       <div class="form-group sm-stack sm-order-nameedit" id="spaceOrgNameGroup" style="display:none">
@@ -3550,6 +3550,23 @@
       return q.get('invite') || '';
     }
 
+    function queueInviteLoginFlow(code) {
+      const normalized = String(code || '').trim();
+      if (!normalized) return;
+      const alreadyQueued = pendingInviteCodeAfterLogin === normalized;
+      pendingInviteCodeAfterLogin = normalized;
+      settingsOverlay.classList.add('open');
+      if (!alreadyQueued) {
+        notify(getLanguageText('settings.needLogin', 'Login is required.'));
+      }
+      try {
+        showSettingsMainView();
+        updatePermissionHints();
+      } catch (e) {
+        console.warn('queueInviteLoginFlow/open-settings-failed', e);
+      }
+    }
+
     function fileToDataUrl(file) {
       return new Promise((resolve, reject) => {
         const fr = new FileReader();
@@ -3775,7 +3792,7 @@
       setText('createOrgBtn', getLanguageText('settings.apply', 'Create'));
       setText('joinOrgBtn', getLanguageText('settings.join', 'Join'));
       setText('copyExportBtn', getLanguageText('settings.bulkCopy', 'Copy exported config'));
-      setText('generateInviteBtn', getLanguageText('settings.inviteCodeGen', 'Generate invite code (1 hour)'));
+      setText('generateInviteBtn', getLanguageText('settings.inviteCodeGen', 'Generate invite code (24 hours)'));
       setText('copyInviteUrlBtn', getLanguageText('settings.copyInviteUrl', 'Copy invite URL'));
       setText('spaceInviteSendBtn', getLanguageText('settings.inviteSend', 'Send invite'));
 
@@ -3975,6 +3992,7 @@
     let personalRanking = null;
     let workspaceOrder = [];
     let pendingInviteCode = null;
+    let pendingInviteCodeAfterLogin = null;
     let dragSrcIndex = null;
     let dockDragSrcIndex = null;
     let resizeTimer = null;
@@ -6823,7 +6841,7 @@
         return;
       }
       const code = generateInviteCode();
-      const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
       const { error } = await supabaseClient
         .from('shortcut_organizations')
         .update({ invite_code: code, invite_expires_at: expiresAt })
@@ -7021,8 +7039,14 @@
           refreshOrgSwitchSelect();
         }
         const inviteFromUrl = getInviteCodeFromUrl();
-        if (inviteFromUrl && currentUser) {
-          await openInviteAcceptByCode(inviteFromUrl);
+        const inviteCodeToHandle = String(inviteFromUrl || pendingInviteCodeAfterLogin || '').trim();
+        if (inviteCodeToHandle) {
+          if (currentUser) {
+            pendingInviteCodeAfterLogin = null;
+            await openInviteAcceptByCode(inviteCodeToHandle);
+          } else {
+            queueInviteLoginFlow(inviteCodeToHandle);
+          }
         }
         clearRuntimeError();
       } catch (e) {
@@ -7479,7 +7503,10 @@
       document.getElementById('joinOrgBtn').addEventListener('click', async () => {
         const code = document.getElementById('joinCodeInput').value.trim();
         if (!code) return notify(getLanguageText('settings.enterJoinCode', 'Please enter join code.'));
-        if (!isLoggedIn()) return notify(getLanguageText('settings.needLogin', 'Login is required.'));
+        if (!isLoggedIn()) {
+          queueInviteLoginFlow(code);
+          return;
+        }
         await openInviteAcceptByCode(code);
       });
 
