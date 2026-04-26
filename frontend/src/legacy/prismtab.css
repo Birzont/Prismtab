@@ -2171,6 +2171,12 @@
     .invite-overlay-actions .btn-save {
       min-width: 108px;
     }
+    #orgLeaveConfirmOverlay .invite-overlay-card {
+      border: 1px solid #f3d6d8;
+    }
+    #orgLeaveConfirmBtn.btn-danger-outline {
+      font-weight: 700;
+    }
     .btn-danger-outline {
       border-color: #d93b41 !important;
       color: #d93b41 !important;

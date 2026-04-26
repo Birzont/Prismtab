@@ -2181,6 +2181,12 @@
     .invite-overlay-actions .btn-save {
       min-width: 108px;
     }
+    #orgLeaveConfirmOverlay .invite-overlay-card {
+      border: 1px solid #f3d6d8;
+    }
+    #orgLeaveConfirmBtn.btn-danger-outline {
+      font-weight: 700;
+    }
     .btn-danger-outline {
       border-color: #d93b41 !important;
       color: #d93b41 !important;
@@ -2832,7 +2838,7 @@
 
   <div class="modal-overlay" id="orgDeleteConfirmOverlay">
     <div class="invite-overlay-card">
-      <h2 class="invite-overlay-title">조직 삭제 확인</h2>
+      <h2 class="invite-overlay-title" id="orgDeleteTitle">조직 삭제 확인</h2>
       <p class="invite-overlay-text" id="orgDeleteConfirmText">이 작업은 번복할 수 없습니다. 계속하려면 <b>Delete</b>를 입력하세요.</p>
       <input type="text" id="orgDeleteConfirmInput" placeholder="Delete" style="width:100%;margin-bottom:12px;">
       <div class="inline-row invite-overlay-actions">
@@ -3400,7 +3406,9 @@
       select.innerHTML = '';
       const placeholder = document.createElement('option');
       placeholder.value = '';
-      placeholder.textContent = members.length ? '새 Owner를 선택하세요' : '넘길 수 있는 멤버가 없습니다';
+      placeholder.textContent = members.length
+        ? getLanguageText('settings.selectNewOwner', 'Select a new owner')
+        : getLanguageText('settings.noTransferCandidate', 'No member available for transfer');
       select.appendChild(placeholder);
       members.forEach((m) => {
         const opt = document.createElement('option');
@@ -3421,14 +3429,21 @@
       const titleEl = document.getElementById('orgLeaveTitle');
       const textEl = document.getElementById('orgLeaveText');
       const confirmBtn = document.getElementById('orgLeaveConfirmBtn');
-      if (titleEl) titleEl.textContent = pendingLeaveOwnerBlocked ? '권한 이전 필요' : '조직 떠나기';
+      if (titleEl) titleEl.textContent = pendingLeaveOwnerBlocked
+        ? getLanguageText('settings.confirm', 'Confirm')
+        : getLanguageText('settings.leaveOrg', 'Leave organization');
       if (textEl) {
         textEl.textContent = pendingLeaveOwnerBlocked
-          ? 'Owner는 떠나기 전에 다른 Owner를 지정해야 합니다.'
-          : '정말 이 조직을 떠나시겠습니까?';
+          ? getLanguageText('settings.ownerMustTransferBeforeLeave', 'Owners must transfer ownership before leaving.')
+          : getLanguageTextWithParams('settings.leaveOrgConfirmWithName', 'Are you sure you want to leave {name}?', {
+            name: org.name || getLanguageText('settings.org', 'Organization')
+          });
       }
       if (confirmBtn) {
-        confirmBtn.textContent = pendingLeaveOwnerBlocked ? '확인' : '떠나기';
+        confirmBtn.textContent = pendingLeaveOwnerBlocked
+          ? getLanguageText('settings.confirm', 'Confirm')
+          : getLanguageText('settings.leaveOrg', 'Leave organization');
+        confirmBtn.classList.toggle('btn-danger-outline', !pendingLeaveOwnerBlocked);
         confirmBtn.disabled = false;
       }
       if (overlay) overlay.classList.add('open');
@@ -3962,6 +3977,12 @@
       setText('generateInviteBtn', getLanguageText('settings.inviteCodeGen', 'Generate invite code (24 hours)'));
       setText('copyInviteUrlBtn', getLanguageText('settings.copyInviteUrl', 'Copy invite URL'));
       setText('spaceInviteSendBtn', getLanguageText('settings.inviteSend', 'Send invite'));
+      setText('spaceOwnerTransferBtn', getLanguageText('settings.transferOwnerBtn', 'Transfer ownership'));
+      setText('deleteOrgBtn', getLanguageText('settings.deleteOrgBtn', 'Delete organization'));
+      setText('orgDeleteCancelBtn', getLanguageText('settings.cancel', 'Cancel'));
+      setText('orgDeleteConfirmBtn', getLanguageText('settings.delete', 'Delete'));
+      setText('orgLeaveCancelBtn', getLanguageText('settings.cancel', 'Cancel'));
+      setText('orgLeaveConfirmBtn', getLanguageText('settings.leaveOrg', 'Leave organization'));
 
       setLabelFor('loginEmailInput', getLanguageText('settings.email', 'Email'));
       setLabelFor('loginPasswordInput', getLanguageText('settings.password', 'Password'));
@@ -3977,6 +3998,7 @@
       setLabelFor('spaceOrgNameInput', getLanguageText('settings.orgName', 'Organization name'));
       setLabelFor('spaceOrgIconInput', getLanguageText('settings.orgIconUrl', 'Organization icon URL'));
       setLabelFor('spaceInviteEmailInput', getLanguageText('settings.inviteEmail', 'Invite recipient email'));
+      setLabelFor('spaceOwnerTransferSelect', getLanguageText('settings.transferOwner', 'Transfer organization ownership'));
 
       const orgHeader = document.querySelector('#orgSettingsSection > h3');
       if (orgHeader) orgHeader.textContent = getLanguageText('settings.org', 'Organization');
@@ -3984,6 +4006,18 @@
       if (wsLabel) wsLabel.textContent = getLanguageText('settings.workspaceOrder', 'Workspaces (drag to reorder)');
       const inviteHint = document.querySelector('#spaceInviteEmailGroup .config-hint');
       if (inviteHint) inviteHint.textContent = getLanguageText('settings.inviteHint', 'Opens your default mail app with the invite link prefilled.');
+      const transferHint = document.querySelector('#spaceOwnerTransferGroup .config-hint');
+      if (transferHint) transferHint.textContent = getLanguageText('settings.transferOwnerHint', 'Once transferred, it cannot be undone. You can leave the organization afterwards.');
+      const deleteHint = document.querySelector('#spaceDeleteSection .config-hint');
+      if (deleteHint) deleteHint.innerHTML = getLanguageText('settings.deleteOrgHint', 'To delete, type <code>Delete</code> in the confirmation popup. This action cannot be undone.');
+      const deleteLabel = document.querySelector('#spaceDeleteSection > label');
+      if (deleteLabel) deleteLabel.textContent = getLanguageText('settings.deleteOrg', 'Delete organization');
+      setText('orgDeleteTitle', getLanguageText('settings.orgDeleteConfirmTitle', 'Confirm organization deletion'));
+      const orgDeleteText = document.getElementById('orgDeleteConfirmText');
+      if (orgDeleteText) orgDeleteText.innerHTML = getLanguageText('settings.orgDeleteConfirmBody', 'This action cannot be undone. To continue, type <b>Delete</b>.');
+      setPlaceholder('orgDeleteConfirmInput', 'Delete');
+      setText('orgLeaveTitle', getLanguageText('settings.leaveOrg', 'Leave organization'));
+      setText('orgLeaveText', getLanguageText('settings.leaveOrgConfirm', 'Are you sure you want to leave this organization?'));
       const dockMembers = document.getElementById('dockModeLabelMembers');
       if (dockMembers) dockMembers.innerHTML = `${getLanguageText('settings.dockModeMembers', 'Show team members in Dock')} <span class="dock-mode-paren">(off)</span>`;
       const dockSpaces = document.getElementById('dockModeLabelSpaces');
@@ -6149,7 +6183,7 @@
           const btnLeave = document.createElement('button');
           btnLeave.type = 'button';
           btnLeave.className = 'org-card-dropdown-item org-card-dropdown-item--danger';
-          btnLeave.innerHTML = `${leaveSvg}<span>조직 떠나기</span>`;
+          btnLeave.innerHTML = `${leaveSvg}<span>${getLanguageText('settings.leaveOrg', 'Leave organization')}</span>`;
           const closeDropdown = () => {
             resetOrgCardDropdownPosition(dropdown);
             dropdown.style.display = 'none';
@@ -7760,20 +7794,20 @@
         const nextOwnerId = select ? String(select.value || '').trim() : '';
         if (!org || !org.id) return;
         if (!isOwnerOfOrg(org)) {
-          notify('Owner만 권한을 넘길 수 있습니다.');
+          notify(getLanguageText('settings.ownerTransferOnly', 'Only owners can transfer ownership.'));
           return;
         }
         if (!nextOwnerId) {
-          notify('새 Owner를 선택해 주세요.');
+          notify(getLanguageText('settings.selectNewOwnerRequired', 'Please select a new owner.'));
           return;
         }
         const { error } = await supabaseClient
           .rpc('transfer_shortcut_org_owner', { p_org_id: org.id, p_new_owner_id: nextOwnerId });
         if (error) {
-          notify(error.message || 'Owner 권한 넘기기에 실패했습니다.');
+          notify(error.message || getLanguageText('settings.ownerTransferFailed', 'Failed to transfer ownership.'));
           return;
         }
-        notify('Owner 권한을 넘겼습니다.');
+        notify(getLanguageText('settings.ownerTransferred', 'Ownership has been transferred.'));
         await loadOrganizations();
         const latest = orgList.find((o) => o.id === org.id);
         if (latest) {
@@ -7790,7 +7824,7 @@
         const org = spaceModalContextOrg;
         if (!org || !org.id) return;
         if (!isOwnerOfOrg(org)) {
-          notify('Owner만 조직을 삭제할 수 있습니다.');
+          notify(getLanguageText('settings.ownerDeleteOnly', 'Only owners can delete this organization.'));
           return;
         }
         pendingDeleteOrgId = org.id;
@@ -7816,7 +7850,7 @@
         const { error } = await supabaseClient
           .rpc('delete_shortcut_org', { p_org_id: orgId, p_confirm_text: 'Delete' });
         if (error) {
-          notify(error.message || '조직 삭제에 실패했습니다.');
+          notify(error.message || getLanguageText('settings.orgDeleteFailed', 'Failed to delete organization.'));
           return;
         }
         pendingDeleteOrgId = null;
@@ -7852,7 +7886,7 @@
         const { error } = await supabaseClient
           .rpc('leave_shortcut_org', { p_org_id: orgId });
         if (error) {
-          notify(error.message || '조직 떠나기에 실패했습니다.');
+          notify(error.message || getLanguageText('settings.orgLeaveFailed', 'Failed to leave organization.'));
           return;
         }
         pendingLeaveOrgId = null;
@@ -7864,7 +7898,7 @@
         await loadOrganizations();
         refreshOrgSwitchSelect();
         render();
-        notify('조직을 떠났습니다.');
+        notify(getLanguageText('settings.orgLeft', 'You have left the organization.'));
       });
       document.getElementById('orgLeaveConfirmOverlay')?.addEventListener('click', (e) => {
         if (e.target === document.getElementById('orgLeaveConfirmOverlay')) {
